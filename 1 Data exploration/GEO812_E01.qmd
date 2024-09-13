@@ -1,0 +1,69 @@
+---
+title: "GEO812_E01"
+format: pdf
+editor: visual
+---
+
+# Exercise
+
+1.  Install and load the `gapminder` package, which provides values for life expectancy, GDP per capita, and population (gapminder illustration).
+
+```{r}
+library(gapminder)
+kable(head(gapminder), 
+      caption = "Demographic Data (first six rows)")
+```
+
+1.  The data set contains data from multiple decades. Extract the data from the most recent year available.
+```{r}
+unique(gapminder$year)
+gapminder_2007 <- filter(gapminder, year == 2007)
+```
+
+2.  Which 5 countries have the highest life-expectancy (in the most recent year)?
+
+```{r}
+arrange(gapminder_2007, desc(lifeExp))
+```
+
+Japan, Hong Kong, Iceland, Switzerland and Australia have the highest life-expectancy
+
+3.  Which continent has the highest absolute GDP? Which has the highest GDP per capita? Beware that different countries have different population size.
+
+```{r}
+gapminder_2007 = mutate(gapminder_2007, gdp_abs = gdpPercap * pop)
+arrange(gapminder_2007, desc(gdp_abs))
+```
+The United States
+
+4.  Create a plot that shows GDP and life expectancy in different countries.
+
+```{r}
+ggplot(data = gapminder_2007) +
+  geom_point(aes(
+    x = gdpPercap, 
+    y = lifeExp,
+    color = continent,         # Point color based on the 'vore' variable (carnivore, herbivore, etc.)
+    size = gdp_abs))
+```
+
+
+5.  Add another visual variable (color, size, shape,...) to the plot (decide yourself what attribute of the data you want to show).
+
+```{r}
+library(classInt)
+# Step 1: Apply the Jenks algorithm to divide gdp_abs into 5 groups
+jenks_breaks <- classIntervals(gapminder_2007$gdp_abs, n = 5, style = "jenks")
+
+# Step 2: Create a new column in the dataset to store the group labels
+gapminder_2007$gdp_group <- cut(gapminder_2007$gdp_abs, breaks = jenks_breaks$brks, include.lowest = TRUE)
+
+# Step 3: Update the ggplot code to use the new gdp_group
+ggplot(data = gapminder_2007) +
+  geom_point(aes(
+    x = gdpPercap, 
+    y = lifeExp,
+    color = continent,      
+    size = gdp_group)) +  # Use gdp_group for size
+  labs(size = "GDP Group (Jenks)")
+```

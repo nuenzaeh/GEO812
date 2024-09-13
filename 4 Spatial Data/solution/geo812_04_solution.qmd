@@ -1,0 +1,170 @@
+---
+title: "GEO 812 -- Solution 4: Spatial Data"
+author: "Peter Ranacher & Takuya Takahashi"
+date: '`r Sys.Date()`'
+format: 
+  html:
+    code-fold: false
+    embed-resources: true
+    number-sections: false
+    fig_caption: yes
+    toc: true
+    toc-location: left
+---
+
+```{r packages}
+#| results: hide
+#| warning: false
+#| message: false
+
+library(sf)
+library(terra)
+library(tidyverse)
+library(units)
+```
+
+# Vector
+
+## Downloading data
+
+Let's start by loading the `swisstopo_downloads.R` script. To do this, you can use the `source` function. Make sure that the `swisstopo_downloads.R` is located in the correct directory.
+
+
+```{r load.swisstopo_downloads.R}
+source("swisstopo_downloads.r")
+```
+
+You can now use the functions `download_district_shapes()` and `download_postcode_shape()` to download the polygons for Swiss districts and postcodes, respectively.
+
+```{r download.data, results='hide'}
+#| results: hide
+#| warning: false
+#| message: false
+district_sf <- download_district_shapes()
+postcode_sf <- download_postcode_shapes()
+```
+
+## Which postcodes belong to the city of Zurich?
+
+```{r postcode.zurich}
+#| warning: false
+#| message: false
+district_zurich_sf <- district_sf |> filter(NAME == "Zürich")
+postcode_zurich_sf <- postcode_sf |> filter(NAME == "Zürich")
+
+postcode_zurich_sf$ZIP4 |> sort()
+```
+
+Let's plot these postcodes! The red area represents the city of Zurich. As you can see, some of the postcode polygons overlap with other municipalities and extend beyond Zurich.
+
+
+```{r plot.area}
+ggplot(data = postcode_zurich_sf) +
+  geom_sf() +
+  geom_sf_label(aes(label = ZIP4), size = 2) +
+  geom_sf(data = district_zurich_sf, fill = "red", alpha = 0.2) +
+  theme_void()
+```
+
+## Area of each postcode
+
+To compute the area of the polygons, we use the `st_area` function. We’ll add a new column to `postcode_zurich_sf` to store the area values.
+
+```{r}
+postcode_zurich_sf$area <- 
+  (st_area(postcode_zurich_sf) |> drop_units()) / 10^6  #square kilometer
+```
+
+Finally, we can color the postcode polygons based on their area.
+
+```{r}
+ggplot(data = postcode_zurich_sf) +
+  geom_sf(aes(fill = area)) +
+  geom_sf_label(aes(label = ZIP4), size = 2) +
+  scale_fill_gradient(low = "blue", high = "yellow", name = "Area (sq km)") +
+  theme_void()
+```
+
+# Raster
+
+## Loading rasters
+
+First, let's load the DTM and DSM using the `rast` function.
+
+```{r load.rasters}
+
+DTM <- rast("https://data.geo.admin.ch/ch.swisstopo.swissalti3d/swissalti3d_2020_2683-1250/swissalti3d_2020_2683-1250_0.5_2056_5728.tif")
+
+DSM <- rast("https://data.geo.admin.ch/ch.swisstopo.swisssurface3d-raster/swisssurface3d-raster_2018_2683-1250/swisssurface3d-raster_2018_2683-1250_0.5_2056_5728.tif")
+```
+
+## Visualising rasters
+
+To visualise the DSM and DTM, we first need to convert the `terra` objects into `data.frame` objects.
+
+```{r create.dataframes}
+DSM_df <- as.data.frame(DSM, xy = TRUE) 
+DTM_df <- as.data.frame(DTM, xy = TRUE) 
+```
+
+When you open these data frames on your machine, you might notice that the column names are very long. Long column names can be problematic for data visualisation with `ggplot2`, where you need to refer to columns by name. Therefore, let's rename the columns for clarity.
+
+```{r rename.column}
+colnames(DSM_df) <- c("x", "y", "dsm")
+colnames(DTM_df) <- c("x", "y", "dtm")
+```
+
+Now we are ready to visualise the rasters!
+
+```{r visualize.dsm}
+ggplot(DSM_df) +  
+  geom_raster(aes(x = x, y = y, fill = dsm)) +
+  scale_fill_viridis_c(na.value = "white") + 
+  coord_quickmap() +
+  theme_minimal()
+```
+
+```{r visualize.dtm}
+ggplot(DTM_df) +  
+  geom_raster(aes(x = x, y = y, fill = dtm)) +
+  scale_fill_viridis_c(na.value = "white") + 
+  coord_quickmap() +
+  theme_minimal()
+```
+
+## Creating a new raster for building heights
+
+Let's work on determining the height of the buildings. As mentioned in the hint, the DTM represents the height of the terrain, while the DSM includes the height of the terrain plus buildings and vegetation. To calculate the building height, subtract the DTM from the DSM. We’ll create a new data frame called `building_height_df` for this purpose.
+
+```{r building.height.df}
+building_height_df <- data.frame(x = DSM_df$x, y = DSM_df$y,
+                                 height = DSM_df$dsm - DTM_df$dtm)
+
+building_height <- rast(building_height_df, type = "xyz")
+
+ggplot(building_height_df) +  
+  geom_raster(aes(x = x, y = y, fill = height)) +
+  scale_fill_viridis_c(na.value = "white") + 
+  coord_quickmap() +
+  theme_minimal()
+```
+
+## How tall is the Y25 building at Irchel?
+
+To extract the height of the Y25 building, let's create an `sf` object representing the building's location and reproject it to the Swiss reference system CH1903+ / LV95 (EPSG:2056).
+
+```{r Y25.sf}
+Y25 <- data.frame(lat=47.3978, lon=8.5505)
+
+Y25_sf <- st_as_sf(Y25, 
+      coords = c("lon", "lat"), crs = 4326)
+
+Y25_sf <- st_transform(Y25_sf, crs = 2056)
+```
+
+Finally, the `extract` function allows us to obtain the building height for the Y25 building.
+
+```{r height_of_Y25}
+#| warning: false
+terra::extract(building_height, Y25_sf)
+```

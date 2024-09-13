@@ -1,0 +1,315 @@
+---
+title: "GEO 812 -- Tutorial 1: Data exploration"
+author: "Peter Ranacher & Takuya Takahashi"
+date: '`r Sys.Date()`'
+format: 
+  html:
+    code-fold: false
+    embed-resources: true
+    number-sections: false
+    fig_caption: yes
+    toc: true
+    toc-location: left
+editor: visual
+---
+
+# Learning Objectives
+
+In this tutorial, you learn how to wrangle and visualise data in R using packages from the `tidyverse`. The tutorial has the following learning objectives:
+
+-   You are familiar with the `tidyverse`.
+-   You are able to explore, transform and visualize data in the `tidyverse`.
+
+# Tibbles and the `tidyverse`
+
+The [`tidyverse`](https://www.tidyverse.org/) is a collection of R packages designed for data science, sharing a common design philosophy, grammar, and data structure. The `tidyverse` makes it easy to perform data manipulation, visualisation, and analysis in a consistent way. Key packages in the `tidyverse` are `dplyr` for data manipulation and `ggplot2` for data visualisation. If you have not worked with R before, the `tidyverse` is arguably the easiest way to start. We first need to load the package to work with the `tidyverse`.
+
+```{r load tidyverse, message=FALSE}
+library(tidyverse)
+
+```
+
+A tibble is the `tidyverse`'s way of storing observations of a phenomenon with several variables. In everyday language, we would refer to a tibble as a table. For those familiar with base R, tibbles are largely equivalent to data frames, with some added convenience functions. In this tutorial, we will work with two tibbles:
+
+-   `titanic_survival`: survival status of passengers on the Titanic
+-   `msleep`: sleep times and weights for selected mammalian species
+
+The Titanic data comes with the `carData` package, which we need to load and convert into a tibble. The `msleep` data is included in the `tidyverse` package and is already in tibble format.
+
+![The Titanic. Before sinking.](images/titanic.jpg)
+
+```{r car and titanic data }
+library(carData) 
+titanic_survival <- as_tibble(TitanicSurvival)
+```
+
+In a tibble, each variable is stored in its own column, each observation is in its own row, and each value is in its own cell. In other words, columns represent variables, while rows represent individual observations. This structure helps maintain clear and organised data.
+
+The Titanic dataset consists of 1,309 observations (rows) and four variables (columns):
+
+```{r show titanic, echo=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+kable(head(titanic_survival), 
+      caption = "The Titanic survival data (first six rows)")
+      
+```
+
+`survived` is the survival status of the passenger (`yes` or `no`). `sex` is the gender of the passenger; `age` is the age of the passenger; `passengerClass` is the class in which the passenger travelled;
+
+The `msleep` data consist of 83 observations (rows) and eleven variables (columns).
+
+::: {style="font-size: 70%;"}
+```{r show sleep, echo=FALSE}
+kable(head(msleep), 
+      caption = "The `msleep` data (first six rows)") |> 
+  add_header_above(data.frame("The `msleep` data", 11), 
+                     monospace = TRUE)
+
+```
+:::
+
+`name` is the common name of the mammal; `genus` and `order` are taxonomic ranks in biological classification; `vore` is the type of diet (e.g., herbivore or carnivore); `conservation` is the specie's conservation status; `sleep_total` is the sleep time in hours per day; `sleep_rem` is the REM sleep time in hours per day. `sleep_cycle` is the length of sleep cycle in hours; `awake` is the time awake in hours per day; `brainwt` is the brain weight in grams; `bodywt` is the body weight in kilograms.
+
+![A fox during it's 9.8 hours of total sleep per day.](images/sleepy_fox.jpg)
+
+# Transforming data
+
+Next, you will learn how to explore, transform and manipulate data in a tibble. Specifically, you will
+
+-   `filter` observations by their values
+-   `select` variables by their names
+-   `arrange` the rows and order the observations
+-   `mutate` the data to create new variables from existing ones
+-   `summarise` the data by collapsing many values into a single value
+-   group the data with `group_by` and perform any of the above operations on the groups.
+
+## `filter`
+
+The [`filter`](https://dplyr.tidyverse.org/reference/filter.html) function is used to **subset rows** in a tibble based on specified conditions. For example, you can use it to select all Titanic passengers who were 25 years old at the time of the disaster.
+
+```{r filter is 25, results='hide'}
+
+filter(titanic_survival, age == 25)
+
+```
+
+Similarly, you can use `filter` to identify all passengers who were younger than 25.
+
+```{r filter younger 25, results='hide'}
+
+filter(titanic_survival, age < 25)
+
+```
+
+The table below lists the most [common operators](https://stat.ethz.ch/R-manual/R-devel/library/base/html/Comparison.html) used to compare two values in a filter expression.
+
+```{r operators, echo=FALSE}
+operator_table <- tibble(
+  Operator = c("==", "!=", "<", "<=", ">", ">="),
+  Description = c("equal", "not equal", "less than", "less than or equal", "greater than", "greater than or equal")
+)
+
+# Print the table 
+kable(operator_table, col.names = c("Operator", "Description"), 
+      caption = "Operators for comparison.",
+      table.attr = 'data-quarto-disable-processing="true"')
+
+```
+
+Additionally, R provides various statements that evaluate to `TRUE` or `FALSE` and can be used in filters. For instance, `is.na(sleep_total)` excludes observations with missing (`NA`) values for total sleep duration.
+
+```{r combine filter 3, results='hide'}
+filter(msleep, !is.na(sleep_total))
+```
+
+You can combine `filter` expressions using logical operators. For example, you can filter for all carnivores that sleep longer than 11 hours.
+
+```{r combine filter 1, results='hide'}
+filter(msleep, vore == "carni" &  sleep_total > 11)
+```
+
+Alternatively, you can filter for all mammals that are either carnivores or omnivores.
+
+```{r combine filter 2, results='hide'}
+filter(msleep, vore == "carni" | vore == "omni")
+
+```
+
+The table below displays the three most important logical operators for combining `filter` expressions.
+
+```{r logical operators, echo=FALSE}
+
+logical_operators <- data.frame(
+  Operator = c("&", "|", "!"),
+  Description = c("Logical AND", "Logical OR", "Logical NOT"),
+  stringsAsFactors = FALSE
+)
+
+# Create and display the table with kable and add a caption
+kable(logical_operators, caption = "Logical Operators for combining filters.") 
+```
+
+## `select`
+
+The [`select`](https://dplyr.tidyverse.org/reference/select.html) function is used to **subset columns** in a tibble based on specified column names. For example, you can use it to select only the `survived` and `age` columns from the Titanic dataset.
+
+```{r select,  results='hide'}
+select(titanic_survival, survived, age)
+
+```
+
+## `arrange`
+
+The [`arrange`](https://dplyr.tidyverse.org/reference/arrange.html) function is used to **reorder rows** in a tibble based on the values of specified columns. For example, you can use it to order the Titanic survival data by `age` in ascending or descending order.
+
+Order the data by `age` in ascending order:
+
+```{r arrange ascending,  results='hide'}
+arrange(titanic_survival, age)
+
+
+```
+
+Order the data by `age` in descending order:
+
+```{r arrange descending, results='hide'}
+arrange(titanic_survival, desc(age))
+
+```
+
+## `mutate`
+
+The [`mutate`](https://dplyr.tidyverse.org/reference/mutate.html) function is used to **add new variables** or **transform existing variables** in a tibble. For example, you can use it to compute the ratio between REM sleep and total sleep in the mammal sleep data and assign it to a new variable called `rem_ratio`. Note that the new variable only exists in a temporary tibble created in this pipeline. To keep the tibble for later use, you would need to assign it to an object using the assignment operator (`<-`).
+
+```{r mutate, results='hide'}
+mutate(msleep, rem_ratio = sleep_rem / sleep_total)
+```
+
+## `summarise`
+
+The [`summarise`](https://dplyr.tidyverse.org/reference/summarise.html) function is used to **create a summary statistic** for a tibble. For example, you can use it to compute the mean age of passengers on the Titanic, removing `NA` values.
+
+```{r summarise, results='hide'}
+summarise(titanic_survival, mean_age = mean(age, na.rm = TRUE))
+```
+
+Here are some useful summary functions you can use in `summarise`.
+
+```{r useful summarise, echo=FALSE}
+
+data <- data.frame(
+  `Measures` = c("Measures of location", "", "Measures of spread", "", "", "Measures of rank", "", "", "Measures of position", "", "", "Counts and proportions of logical values", "", ""),
+  `Function` = c("mean(x)", "median(x)", "sd(x)", "IQR(x)", "mad(x)", "min(x)", "max(x)", "quantile(x, 0.95)", "first(x)", "nth(x, 2)", "last(x)", "n()", "n_distinct(x)", "sum(x > 10)"),
+  `Description` = c("Mean", "Median", "Standard deviation", "Interquartile range", "Median absolute deviation" , "Minimum", "Maximum", "95th quantile", "First row", "nth row", "Last row", "Count the number of rows", "Number of distinct combinations", "Sum of values larger than 10")
+)
+
+kable(data, format = "markdown", col.names = c("Measures", "Function", "Description")) |>
+  kable_styling(position = "left", full_width = FALSE)
+```
+
+## `group_by`
+
+The [`group_by`](https://dplyr.tidyverse.org/reference/group_by.html) function is used to group a tibble by one or more variables. When used in conjunction with `summarise`, it computes the summary statistics within each group. Here’s an example computing the mean age of passengers, grouped by their class, removing `NA` values.
+
+```{r group by, results='hide'}
+
+group_by(titanic_survival, passengerClass) |>
+  summarise(mean_age = mean(age, na.rm = TRUE))
+```
+
+## Combine operations
+
+You might wonder what `|>` does in the code snippet above. `|>`, known as the [pipe operator](https://magrittr.tidyverse.org/reference/pipe.html), allows you to chain together multiple operations, passing the result of one operation as the input to the next , like Mario sliding through a pipe. For example, the code below filters out herbivores, then groups them by `order`, and finally computes the mean sleep and body weight per group all in one pipeline. Note that the `msleep` dataset is omitted from the subsequent operations because it has already been passed through the pipe. `|>` is a new pipe operator which was introduced quite recently. You may also see the old pipe operator `%>%` which works similarly.
+
+```{r pipe, results='hide'}
+filter(msleep, vore == "herbi" ) |>
+group_by(order) |>
+  summarise(mean_sleep = mean(sleep_total, na.rm = TRUE),
+            mean_bodywt = mean(bodywt, na.rm = TRUE)) 
+```
+
+![The pipe operator (`|>`) works analogously to Mario sliding through a pipe from left to right, passing the result of one operation to the next.](images/mario.png)
+
+## Join data
+
+Sometimes we need to merge data from different tibbles into one. [Joins](https://dplyr.tidyverse.org/reference/mutate-joins.html) do just that. To perform a join, we first need a unique key to specify which rows should be matched.
+
+Since we don’t have data that we can meaningfully join, we’ll use a made-up example to illustrate the concept. We’ll split the available data into two tibbles, each containing different subsets of columns but sharing a unique key. Once split, we use a join operation to combine these tibbles back together. For this purpose, we use `left_join`, which ensures that every row in the first tibble is preserved and matched with corresponding rows from the second tibble.
+
+```{r merge join, results='hide'}
+
+# Add a unique ID
+titanic_survival <- mutate(titanic_survival, id = row_number())
+
+# Split the data into two tibbles
+a <- select(titanic_survival, age, sex, id)
+b <- select(titanic_survival, survived, passengerClass, id)
+
+# Join the data back together again
+left_join(a, b, by = "id")
+```
+
+# Plotting
+
+`ggplot2` is the go-to package for visualising in the `tidyverse`. `ggplot2` builds on the [layered grammar of graphics](https://byrneslab.net/classes/biol607/readings/wickham_layered-grammar.pdf), which concisely describes the components of a graphic. You start by specifying the data and aesthetic mappings, such as which variables to plot on the x and y axes. Then, you add layers to the plot, with each layer introducing a specific type of visualization or statistical transformation, allowing you to build complex plots incrementally. Additionally, `ggplot2` offers extensive customisation options. Sounds complicated? Let's walk through an example.
+
+```{r plot basics, warning=FALSE}
+ggplot(data = msleep) + 
+  geom_point(mapping = aes(x = sleep_total, y = sleep_rem))
+
+```
+
+`ggplot(data = msleep)` initializes the plot, specifying `msleep` as the dataset. The plus (`+`) operator adds a new layer to the plot; in this case, `geom_point` creates a plot where `sleep_total` is mapped to the x-axis and `sleep_rem` to the y-axis.
+
+### Scatter plots
+
+In the example above, [`geom_point`](https://ggplot2.tidyverse.org/reference/geom_point.html) creates a scatter plot, arguably one of the simplest types of plots. Scatter plots display individual data points on a two-dimensional plane, with each point representing a pair of values from two different variables. One variable is plotted on the x-axis and the other on the y-axis. The plot demonstrates the relationship between total sleep, plotted on the x-axis, and REM sleep, plotted on the y-axis. You can easily modify the [aesthetics](https://ggplot2.tidyverse.org/articles/ggplot2-specs.html) of the plot. For example, the code below color-codes the data points according to different `vores` and adjusts the size of the dots proportional to body weight.
+
+```{r change scatter plot, warning=FALSE}
+
+ggplot(data = msleep) + 
+  geom_point(mapping = aes(sleep_total, sleep_rem, 
+                           color = vore, 
+                           size = bodywt))
+
+```
+
+### Bar plots
+
+Another useful plot is a bar plot, which displays the magnitude of categories by using rectangular bars, where the length of each bar corresponds to the value of the category it represents. Here, we plot the number of passengers per class on the Titanic. `geom_bar` first groups the data by passenger class, counts the number of passengers per class, and then plots these counts as bars. Quite a lot is happening here behind the scenes!
+
+```{r bar plots}
+ggplot(data = titanic_survival) +
+  geom_bar(aes(x = passengerClass))
+
+```
+
+You can also modify the aesthetics of the bar plot by color-coding, for example, filling the bars according to survival status.
+
+```{r change bar plots}
+
+ggplot(data = titanic_survival) + 
+  geom_bar(mapping = aes(passengerClass, 
+                         fill = survived))
+
+
+```
+
+# Cheat sheets
+
+Here are two cheat sheets for data transformation and plotting in the `tidyverse`:
+
+-   [Data transformation](https://rstudio.github.io/cheatsheets/html/data-transformation.html)
+-   [Plotting in `ggplot2`](https://rstudio.github.io/cheatsheets/html/data-visualization.html)
+
+# Exercise
+
+1.  Install and load the `gapminder` package, which provides values for life expectancy, GDP per capita, and population (gapminder illustration).
+2.  The data set contains data from multiple decades. Extract the data from the most recent year available.
+3.  Which 5 countries have the highest life-expectancy (in the most recent year)?
+4.  Which continent has the highest absolute GDP? Which has the highest GDP per capita? Beware that different countries have different population size.
+5.  Create a plot that shows GDP and life expectancy in different countries.
+6.  Add another visual variable (color, size, shape,...) to the plot (decide yourself what attribute of the data you want to show).
+
+See you in the next tutorial!

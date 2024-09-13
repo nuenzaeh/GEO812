@@ -1,0 +1,138 @@
+---
+title: "GEO 812 -- Solution 1: Data exploration"
+author: "Peter Ranacher & Takuya Takahashi"
+date: '`r Sys.Date()`'
+format: 
+  html:
+    code-fold: false
+    embed-resources: true
+    number-sections: false
+    fig_caption: yes
+    toc: true
+    toc-location: left
+---
+
+# The gapminder data-set
+
+In this exercise, we will use a data set called `gapminder`, which contains data on life expectancy, GDP, and population size in countries across the world over a span of 55 years. We can load the data set into R using the `gapminder` package.
+
+```{r load_gapminder, results='hide', message=FALSE}
+
+library(gapminder)
+library(tidyverse)
+
+```
+
+
+## Plotting GDP and life expectancy
+
+We can use `ggplot2` to plot the life expectancy against GDP per capita for 
+each country.
+
+```{r plotting_1}
+ggplot(gapminder) + geom_point(aes(x=gdpPercap, y=lifeExp))
+```
+
+There appears to be a positive correlation between the two variables, which becomes even more apparent when GDP is plotted on a log scale. I have also decided to color the countries by continent.
+
+```{r plotting_2}
+ggplot(gapminder) + 
+  geom_point(aes(x=gdpPercap, y=lifeExp, color=continent)) + 
+  scale_x_log10()
+```
+
+Let's use the size attribute to represent the population size of each country.
+
+```{r plotting_3}
+gapminder |> 
+  ggplot(aes(x=gdpPercap, y=lifeExp)) + 
+    geom_point(aes(color=continent, size=pop)) + 
+    scale_x_log10()
+```
+
+## Finding the most recent entries
+
+The plot above combines data from multiple years. We can use the `filter` function
+to extract data from the most recent year recorded (`r max(gapminder$year)`).
+
+```{r filter_year}
+gapminder_recent <- gapminder |> filter(year == max(year))
+gapminder_recent |> 
+  ggplot(aes(x=gdpPercap, y=lifeExp)) + 
+    geom_point(aes(color=continent, size=pop)) + 
+    geom_label(aes(label=country), size=1.2, alpha=0, label.size = 0) +
+    scale_x_log10()
+```
+ 
+## Highest life-expectancy
+
+To find the countries with the highest life expectancy, we can sort the data frame using `arrange`
+and take the last entries using `tail`:
+
+```{r lowest_population}
+gapminder_recent |>
+  dplyr::select(country, lifeExp) |> 
+  arrange(lifeExp) |> 
+  tail(5)
+```
+
+Of course, we could also do the same to find the countries with the highest GDP
+per capita.
+
+```{r}
+gapminder_recent |>
+  dplyr::select(country, gdpPercap, pop) |> 
+  arrange(gdpPercap) |> 
+  tail()
+```
+
+## Continent GDP (absolute and per capita)
+
+Before aggregating GDP by continent, we need to calculate the absolute GDP for each country by multiplying GDP per capita by the population size.
+
+```{r}
+gapminder_recent <- gapminder_recent |> mutate(gdp = pop * gdpPercap)
+head(gapminder_recent)
+```
+
+Now we can use `group_by` and `summarise` to obtain the total GDP and population for each continent.
+
+```{r}
+gapminder_continents <- gapminder_recent |> 
+  group_by(continent) |>
+  summarise(gdp = sum(gdp), pop=sum(pop)) |> 
+  arrange(gdp)
+
+gapminder_continents
+```
+
+As we can see, `r gapminder_continents |> filter(gdp == max(gdp)) |> select(continent)` identifies the continent with the highest GDP.
+
+For GDP per capita, you might be tempted to simply take the mean of the country GDP values.
+
+```{r}
+gapminder_recent |> 
+  group_by(continent) |>
+  summarise(gdpPercap = mean(gdpPercap)) |> 
+  arrange(gdpPercap)
+```
+
+However, this approach would ignore differences in population size (e.g., India and Kuwait would be weighted the same). Instead, we can recalculate `gdpPercap` from the aggregated `gdp` and `pop`:
+
+```{r}
+gapminder_continents <- gapminder_continents |>
+  mutate(gdpPercap=gdp / pop) |> 
+  arrange(gdpPercap)
+gapminder_continents
+```
+
+Alternatively, we can use the `weighted.mean` function to directly compute the weighted mean of GDP per capita for each country:
+
+```{r}
+gapminder_recent |> 
+  group_by(continent) |>
+  summarise(gdpPercap = weighted.mean(gdpPercap, pop)) |> 
+  arrange(gdpPercap)
+```
+
+As you can see, the difference from the naive mean is quite notable. Still, with either method, we would find that `r gapminder_continents |> filter(gdpPercap == max(gdpPercap)) |> select(continent)` has the highest GDP per capita.

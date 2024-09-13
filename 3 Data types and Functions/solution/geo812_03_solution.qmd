@@ -1,0 +1,123 @@
+---
+title: "GEO 812 -- Solution 3: Data types and functions"
+author: "Peter Ranacher & Takuya Takahashi"
+date: '`r Sys.Date()`'
+format: 
+  html:
+    code-fold: false
+    embed-resources: true
+    number-sections: false
+    fig_caption: yes
+    toc: true
+    toc-location: left
+---
+
+
+```{r packages, message=FALSE}
+library(tidyverse)
+library(sf)
+library(tidygeocoder)
+```
+
+## Air miles data 
+
+First, we load the flight data (`flight_data_amm_coords.csv`) using the `read.csv()` function. The data have been previously geocoded. You can refer to the solution in tutorial 2 to see how this was done. 
+
+```{r load_csv, message=FALSE}
+flight_data <- read_csv("data/flight_data_amm_coords.csv")
+
+```
+
+Some of the geocoding was not successful and returned `NA`. We can simply remove these missing entries.
+
+```{r}
+flight_data <- flight_data |> 
+  filter(!is.na(origin_lat) & !is.na(origin_long) & 
+           !is.na(destination_lat) & !is.na(destination_long))
+```
+
+
+## Great circle distance
+
+Next, let's define the function to calculate the great circle distance using the formula provided in tutorial 3.
+
+```{r}
+
+deg2rad <- function(deg) {(deg * pi) / (180)}
+
+d_great_circle <- function(phi_1, lambda_1, phi_2, lambda_2, r = 6371) {
+  
+  if (!is.numeric(c(phi_1, phi_2, lambda_1, lambda_2))) {
+    stop("input should be numeric")
+  }
+  else if ((phi_1 > 90) || (phi_2 > 90) || (phi_1 < -90) || (phi_2 < -90)) {
+    stop("latitude must be between -90 and +90 degrees")
+  } else if ((lambda_1 > 180) || (lambda_2 > 180) || (lambda_1 < -180) || (lambda_2 < -180)) {
+    stop("longitude must be between -180 and +180 degrees")
+  } else {
+    # Degrees to radians
+    phi_1 <- deg2rad(phi_1)
+    phi_2 <- deg2rad(phi_2)
+    lambda_1 <- deg2rad(lambda_1)
+    lambda_2 <- deg2rad(lambda_2)
+    
+    # Compute the great circle distance
+    part_1 <- sin((phi_2 - phi_1) / 2)**2
+    part_2 <- cos(phi_1) * cos(phi_2) * sin((lambda_2 - lambda_1) / 2)**2
+    d <- 2 *r * asin(sqrt(part_1 + part_2))
+    return(d)
+  }
+}
+```
+
+Let's test the function with some coordinates at latitude 20° and longitude
++/- 179° (i.e. 2° apart). This should result in a distance of approximately `209 km`.
+
+```{r}
+d_great_circle(20, 179, 20, -179)
+```
+
+As another test, the distance between the North and South Poles should be approximately `20000 km`.
+
+```{r}
+d_great_circle(90, 0, -90, 0)
+```
+
+That all looks good. Small differences are to be expected due to the fact that the Earth is not a perfect sphere, as well as inaccuracies in our estimate of the Earth's radius.
+
+## Computing flight distances
+
+Now, let's calculate the distance from the origin to each destination for all anonymised 2022 flights at the Department of Geography. First, we'll demonstrate how to do this using `apply()`. We'll create a helper function that extracts the latitudes and longitudes from each row and passes them to the great circle distance function.
+
+```{r distance from row}
+
+distance_from_row <- function(row) {
+  d_great_circle(as.double(row["origin_lat"]), as.double(row["origin_long"]), 
+                 as.double(row["destination_lat"]), as.double(row["destination_long"]))
+}
+
+```
+
+
+Now we can simply apply this function along axis 1, i.e. iterate over the rows of the data frame.
+
+```{r, results='hide'}
+apply(flight_data, 1, distance_from_row)
+```
+
+The `dplyr::mutate` function is generally more convenient and efficient. However, it cannot be used directly in this case. The validity checks in the `d_great_circle` function assume scalar inputs for `lat` and `long`, but they receive vectors instead. To address this, we can either modify the validity checks to handle vectors or use the `rowwise` approach, which applies the function to each row individually, similar to the `apply` function.
+
+
+```{r error=TRUE}
+flight_data <- flight_data |> 
+  rowwise() |>
+  mutate(distance = d_great_circle(origin_lat, origin_long, destination_lat, destination_long)) 
+```
+ 
+So, what were the longest flight in 2022? 
+```{r}
+flight_data |>
+  arrange(desc(distance)) |>
+  head() |>
+  select(origin, destination, distance)
+```

@@ -1,0 +1,389 @@
+---
+title: "GEO 812 -- Tutorial 4: Spatial Data"
+author: "Peter Ranacher & Takuya Takahashi"
+date: '`r Sys.Date()`'
+format: 
+  html:
+    code-fold: false
+    embed-resources: true
+    number-sections: false
+    fig_caption: yes
+    toc: true
+    toc-location: left
+editor: visual
+---
+
+# Learning Objectives
+
+By the end of this tutorial, you will be able to
+
+-   explain the main spatial data types in R
+-   work with spatial vector and raster data
+-   perform spatial operations (e.g., determine if two polygons overlap)
+-   transform data between different coordinate reference systems
+-   visualise data on a map
+
+# Basic spatial data types
+
+Spatial data describe the geographic location and characteristics of features on the Earth's surface. There are two main types of spatial data: vector data and raster data.
+
+**Vector data** represent geographic features as discrete entities on the Earth's surface. Depending on the entity and the spatial resolution, features can be represented as points, lines, or polygons.
+
+-   Points have a single pair of coordinates (longitude and latitude, x and y, east and north). They represent entities with one discrete location, such as a tree, a building, or a city.
+
+-   Lines are a sequence of points and represent linear objects such as roads or rivers.
+
+-   Polygons are a closed sequence of points and represent areas, such as lakes, forests, or countries.
+
+**Raster data** represent geographic features as a continuous surface. They consist of a grid of cells, where each cell has a value representing an attribute of the feature. The attribute can be quantitative, such as elevation, temperature, or precipitation, or qualitative, such as land cover or soil type. The resolution gives the number of grid cells per unit area, while the coverage defines the spatial extent of the raster (e.g., the canton of Zurich vs. all of Switzerland).
+
+![Vector data](images/vector.jpg)
+
+![Raster data](images/raster.png)
+
+We will use the `sf` package for spatial vector data and the `terra` package for raster data. These packages inform R on how to correctly interpret the data and provide operations to manipulate them, such as spatial analysis and visualisation. While there are other packages available, we'll focus on these two.
+
+Spatial data can come in various formats. Your data might already be in a dedicated spatial data format, such as a shapefile, GeoPackage, GeoJSON, or GeoTIFF. Alternatively, you might have a CSV file with longitude and latitude (or x and y) columns. Different file formats require slightly different approaches for loading data into R and converting them into `sf` and `terra` objects.
+
+# Coordinate reference systems
+
+For R to accurately map your data, it needs to decipher their spatial coordinates and recognise the coordinate reference system (CRS) they adhere to. Consider it akin to locating a lecture room: you can only correctly decipher “H-92” once you know it’s a room number on the H floor, and you can only locate the room once you know it’s in building Y25 at UZH.
+
+There is plenty of literature and debate on which coordinate reference system to use for different maps and why. While we acknowledge the importance of selecting an appropriate CRS, our primary focus here is on understanding how to work with CRS in R.
+
+In most spatial packages in R, there are standardised ways to deal with CRS to define a position on the Earth's surface:
+
+-   **EPSG Code**: The European Petroleum Survey Group (EPSG) needed a foolproof way to locate their oil and gas exploration sites, so they devised a unique numerical identifier for each coordinate reference system. For example, the World Geodetic System 1984 (WGS84), widely used as the standard for GPS (Global Positioning System) coordinates and various mapping and geospatial applications, is identified by the EPSG code 4326. If you're from Switzerland, you might also be familiar with the Swiss coordinate reference system CH1903+ / LV95, which has the EPSG code 2056.
+
+-   **proj4**: A `proj4` string encodes the parameters of a CRS in a compact, textual format. For instance, WGS84 in `proj4` is represented as `"+proj=longlat +datum=WGS84 +no_defs +type=crs"`.
+
+-   **Well-Known Text (WKT)**: WKT represents spatial reference systems in a human-readable form. For WGS84, the WKT is the very human-readable text `"GEOGCS["WGS 84", DATUM["WGS_1984", SPHEROID["WGS 84",6378137,298.257223563, AUTHORITY["EPSG","7030"]], AUTHORITY["EPSG","6326"]], PRIMEM["Greenwich",0, AUTHORITY["EPSG","8901"]], UNIT["degree",0.0174532925199433, AUTHORITY["EPSG","9122"]], AUTHORITY["EPSG","4326"]]"`.
+
+You can find more information on CRS, including their corresponding EPSG codes, `proj4` strings, and WKT representations, on the [EPSG website](https://epsg.io).
+
+In the following sections, we will briefly introduce the `sf` and `terra` packages for working with vector and raster data in R. When appropriate, we will also explain how these packages handle and define CRS.
+
+# Vector data (`sf`)
+
+The `sf` package in R encodes spatial vector data, i.e., objects with a spatial location or extent, as simple features (`sf`). `sf` objects are data frames with an additional **simple feature column** (`sfc`). The `sfc` contains the **feature geometry** (`sfg`), which represents the spatial location or extent of the feature. In the table below, the `geom` column contains the `sfg` and shows the location of five European cities as `POINT` geometries.
+
+| **city**    | **population** | **geom**                    |
+|-------------|----------------|-----------------------------|
+| Lausanne    | 137000         | POINT (6.633597 46.51996)  |
+| Berlin      | 3645000        | POINT (13.4114 52.5234)     |
+| Larnaca     | 51400         | POINT (33.63405 34.9231)    |
+| Montpellier | 277600         | POINT(3.87723 43.61092)     |
+| Kuopio      | 117300         | POINT(27.68306 62.89972)    |
+
+The following seven `sfg` types are the most common:
+
+| type                 | description                                                                                                                                                                                                               |
+|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `POINT`              | zero-dimensional geometry containing a single point                                                                                                                                                                       |
+| `LINESTRING`         | sequence of points connected by straight, non-self-intersecting line pieces; one-dimensional geometry                                                                                                                     |
+| `POLYGON`            | geometry with a positive area (two-dimensional); sequence of points form a closed, non-self-intersecting ring; the first ring denotes the exterior ring, zero or more subsequent rings denote holes in this exterior ring |
+| `MULTIPOINT`         | set of points; a `MULTIPOINT` is simple if no two Points in the `MULTIPOINT` are equal                                                                                                                                    |
+| `MULTILINESTRING`    | set of linestrings                                                                                                                                                                                                        |
+| `MULTIPOLYGON`       | set of polygons                                                                                                                                                                                                           |
+| `GEOMETRYCOLLECTION` | set of geometries of any type except `GEOMETRYCOLLECTION`                                                                                                                                                                 |
+
+: The seven most common simple feature types (table taken from [Simple Features for R • sf](https://r-spatial.github.io/sf/articles/sf1.html)).
+
+## Creating `sf` objects
+
+From here on, you will begin using the `sf` package. Before proceeding, install the `sf` package (if you have not) and load it with the following code:
+
+```{r}
+#| warning: false
+#| message: false
+if (!"sf" %in% rownames(installed.packages())) install.packages("sf")
+
+library(sf)
+```
+
+There are two main ways to create an `sf` object:
+
+1.  Convert a data frame with coordinate columns into an `sf` object
+
+2.  Import data in a dedicated spatial data format
+
+### Convert a data frame with coordinate columns
+
+Often, we receive data in the form of tables with coordinate columns. We can easily convert these into `sf` objects. Here, we first create a data frame with the longitude and latitude of two cities, which we then convert into an `sf` object using `st_as_sf`. The `crs` function assigns the coordinate reference system, which in this case is WGS84, specified by the EPSG code `4326`.
+
+```{r connvert data}
+
+cities <- data.frame(name = c("Lausanne", "Berlin"),
+                 	 lon = c(6.63, 13.41),
+                 	 lat = c(46.52, 52.52))
+
+cities_sf <- st_as_sf(cities, 
+      coords = c("lon", "lat"), crs = 4326)
+```
+
+### Import data in a dedicated spatial data format
+
+`sf` understands most of the common spatial data formats listed below.
+
+-   Shapefile (`.shp`) is a proprietary data format by ESRI consisting of multiple files that collectively store geometric and attribute data for geographic features: `.shp` stores geometric data, `.dbf` stores the attribute data, and `.prj` stores the coordinate system information. Make sure you have all the files together in one folder!
+
+-   GeoPackage (`.gpkg`) is an open, platform-independent, self-describing, compact format for spatial data.
+
+-   GeoJSON (`.geojson`) is an open format designed to represent simple geographical features along with non-spatial attributes.
+
+We can import these data from a file using the function `read_sf(file_path)` or `st_read(file_path)` (see tutorial 5). Alternatively, we can load the data through a package or directly from the Internet. Here, we import country borders from Natural Earth using the `rnaturalearth` package.
+
+```{r}
+#| warning: false
+#| message: false
+library(rnaturalearth)
+
+world_sf <- ne_countries(scale = "medium", returnclass = "sf")
+```
+
+The resulting `world_sf` object contains the world's country boundaries as polygons. We can call `st_crs(world_sf)` to retrieve the CRS information in WKT format and confirm that it's WGS84.
+
+```{r crs}
+st_crs(world_sf)
+```
+
+## Manipulating `sf` objects
+
+### `sf` and the `tidyverse`
+
+`sf` is designed to work seamlessly with the `tidyverse`, allowing you to use a variety of `tidyverse` functions to manipulate `sf` objects. For instance, starting with the `world_sf` object we created above, let's filter the polygon corresponding to Switzerland.
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+
+switzerland_sf <- world_sf %>%
+  filter(name == "Switzerland")
+```
+
+Here is how the code works: `world_sf` is a `tidyverse`-compatible `sf` object, where each entry represents a polygon corresponding to a country or region. The code `filter(name == 'Switzerland')` selects the entry where the `name` is equal to 'Switzerland', which returns the polygon for Switzerland.
+
+![The Swiss way: filter all that is not Switzerland](images/world_to_switzerland.png)
+
+### Reprojecting data from one CRS to another
+
+When the data are in one CRS but need to be in another, we can reproject them. Let's reproject the polygon of Switzerland (`switzerland_sf`) to the Swiss reference system CH1903+ / LV95 (EPSG:2056), which is commonly used in Switzerland.
+
+```{r reproject}
+switzerland_lv95_sf <- st_transform(switzerland_sf, crs = 2056) 
+```
+
+### Spatial relationships
+
+We can use the `sf` package to investigate spatial relationships between objects. For example, the `st_contains(a, b)` function returns a Boolean (logical) value (`TRUE` or `FALSE`) indicating whether the geometry `a` contains the geometry `b`. So, which cities in `cities_sf` are located in Switzerland?
+
+```{r}
+st_contains(switzerland_sf, cities_sf, sparse = FALSE)
+```
+
+The return value of the `st_contains` function is a matrix of dimension (1 \times 2) because `cities_sf` has two entries. This allows us to compare the spatial relationships of multiple geometries simultaneously. Recall that the two entries in `cities_sf` are Lausanne and Berlin, so the result indicates that Lausanne is in Switzerland, while Berlin is not. Here are some other examples of spatial relationships.
+
+![Some spatial relationships](images/spatial_relationships.png)
+
+### Spatial relationships as filters
+
+We can use spatial relationships to filter rows from an `sf` object. Here, we filter all cities that intersect with `switzerland_sf`, which is just another way of saying that the cities are in Switzerland (or on its boundary, to be precise).
+
+```{r filter 1}
+swiss_filter <- st_intersects(cities_sf, 
+                              switzerland_sf, sparse=FALSE) |> as.vector()
+
+filter(cities_sf, swiss_filter)
+```
+
+In the first line of the code, we create a vector of Boolean (logical) values indicating whether each city in `cities_sf` intersects with `switzerland_sf`. In the second line, we use the `filter` function to extract the geometries in `cities_sf` intersecting with `switzerland_sf`. Alternatively, we can use the `st_filter` function directly.
+
+```{r filter 2}
+st_filter(cities_sf, switzerland_sf, .predicate = st_intersects)
+```
+
+The `.predicate` argument specifies the spatial relationship used to filter the spatial features (here: intersect).
+
+### Spatial measurements
+
+We can use the `sf` package to measure the geometries of spatial objects and analyse the properties between them. For example, what is the pairwise distance between the cities on the Earth's surface?
+
+```{r distance}
+st_distance(cities_sf)
+```
+
+What is the area of Switzerland?
+
+```{r area }
+st_area(switzerland_sf)
+```
+
+### Geometric operations
+
+We can use `sf` to perform geometric operations and modify the geometries of our spatial objects. For example, we can annex Liechtenstein to Switzerland by merging (`st_union`) the geometries of the two countries into one `sf` object called `switzerstein`.
+
+```{r}
+#| warning: false
+#| message: false
+switzerstein_sf <- st_union(switzerland_sf,
+                            world_sf |> filter(name == "Liechtenstein"))
+```
+
+Here are some other geometric operations to modify spatial objects ![Some geometric operations.](images/spatial_operations.png)
+
+## Mapping `sf` with `ggplot2`
+
+We can use the `ggplot2` package to visualise `sf` objects. Here is a quick map of Switzerland and its neighbour to the East (Mordor).
+
+```{r}
+
+ggplot() +
+  geom_sf(data = world_sf |> filter(name == "Austria")) +
+  geom_sf(data = switzerland_sf) +
+  theme_minimal()
+```
+
+This map provides a quick preview of how mapping in R works. We will create more detailed and complete maps in tutorial 5!
+
+## `sf` and `sp`
+
+`sp` is a traditional package for spatial analysis in R, offering a wide range of GIS functions. While `sf` has largely replaced `sp`, you may still encounter packages and functions that rely on `sp`. Therefore, it is useful to know how to convert spatial data between these two formats. The following code converts the cities from `sf` to `sp`.
+
+```{r}
+cities_sp <- as(cities_sf, "Spatial")
+```
+
+The following code converts them back from `sp` to `sf`.
+
+```{r}
+st_as_sf(cities_sp)
+```
+
+# Raster data (`terra`)
+
+The `terra` package offers methods to manipulate spatial raster data. Rasters, or grids, divide space into cells of equal size in units of the coordinate reference system. Rasters often represent continuous phenomena, such as elevation or temperature, and can have multiple layers, each storing a different variable.
+
+![Pixel-based image formats (e.g. png, jpg) are also rasters.](images/raster_dog.jpg)
+
+Before proceeding, don't forget to install and load the `terra` package.
+
+```{r}
+#| warning: false
+#| message: false
+if (!"terra" %in% rownames(installed.packages())) install.packages("terra")
+
+library(terra)
+```
+
+## Creating raster objects
+
+Again, we can import raster data from a file using the `rast("your_raster_file.tif")` function, or we can load the data through a package or directly from the Internet. In this case, we use the `geodata` package to import elevation data. The `elevation_30s` function retrieves a digital elevation model (DEM) with a resolution of 30 arc seconds as a spatial raster. We download the DEM for Switzerland and Germany.
+
+```{r}
+#| warning: false
+#| message: false
+if (!"geodata" %in% rownames(installed.packages())) install.packages("geodata")
+
+library(geodata)
+
+dem_ch <- elevation_30s(country = "CH", path=tempdir())
+dem_de <- elevation_30s(country = "DE", path=tempdir())
+```
+
+We merge the two rasters and rename their layers as they have rather cumbersome names.
+
+```{r}
+#| warning: false
+#| message: false
+dem <- merge(dem_ch, dem_de)
+names(dem)  <- names(dem_de) <- names(dem_ch) <- "altitude"
+```
+
+## Extracting values from a raster
+
+We can extract values from a raster layer at specific locations. First, we check if both datasets are in the same CRS using the `crs()` function from the `terra` package.
+
+```{r terra crs}
+crs(dem)
+```
+
+The WKT confirms that the DEM we downloaded is indeed in WGS84. Since `terra` understands `sf` geometries, we can use the `cities_sf` data we worked with earlier to retrieve the elevation for Lausanne and Berlin from the DEM using the `extract()` function.
+
+```{r extract}
+extract(dem, cities_sf)
+```
+
+## Plotting raster data
+
+The `terra` format is not directly compatible with `ggplot2`. Fortunately, we can either plot our raster with the `terra` package's native plot function or convert it to a data frame and then plot it with `ggplot2`. Here, we use `as.data.frame()` to convert the raster to a data frame and then apply the `geom_raster()` function to visualise the values as a heat map, where `fill` specifies the variable to be visualised. Note that our data are not in an `sf` object but in a data frame, which is why we use `geom_raster` rather than `geom_sf`. Since `geom_raster` does not inherently understand map projections, we need to use `coord_quickmap()` to maintain the aspect ratio of the plot so that the units on the x and y axes are scaled equally. Try removing `coord_quickmap()` and see for yourself how the map’s scaling becomes awkward.
+
+```{r}
+dem_df <- as.data.frame(dem, xy = TRUE) 
+
+ggplot(dem_df) +  
+  geom_raster(aes(x = x, y = y, fill = altitude)) +
+  scale_fill_viridis_c(na.value = "white") + 
+  coord_quickmap() +
+  theme_minimal()
+```
+
+We can also plot histograms, for example to compare elevation in the two countries.
+
+```{r dem_ch}
+ggplot() +
+  geom_histogram(data = as.data.frame(dem_ch, xy = T),
+                 aes(altitude), bins=40) + 
+  theme_minimal() +
+  labs(title = "DEM in Switzerland")
+```
+
+```{r dem_de}
+ggplot() +
+  geom_histogram(data = as.data.frame(dem_de, xy = T),
+             	 aes(altitude), bins=40) + 
+  theme_minimal() + 
+  labs(title = "DEM in Germany")
+```
+
+Surprisingly, we find that Switzerland has higher mountains than Germany.
+
+# Excersices
+
+## Vector
+
+1.  Use the *swisstopo_downloads.R* script on OLAT to download polygons of Swiss districts and postcodes.
+
+2.  Which postcodes belong to the city of Zurich?
+
+3.  Compute the area of each postcode polygon in Zurich.
+
+4.  Create a map of the different postcodes and colour them according to their area.
+
+## Raster
+
+1.  Use the following **digital terrain (DTM)** and **surface models (DSM)** from Swisstopo and load them into R with the `rast(...)` function.
+
+    -   DTM (swissALTI3D) is available on [Swisstopo](https://data.geo.admin.ch/ch.swisstopo.swissalti3d/swissalti3d_2020_2683-1250/swissalti3d_2020_2683-1250_0.5_2056_5728.tif): https://data.geo.admin.ch/ch.swisstopo.swissalti3d/swissalti3d_2020_2683-1250/swissalti3d_2020_2683-1250_0.5_2056_5728.tif.
+
+    -   DSM (swissSURFACE3D Raster) is also available on [Swisstopo](https://data.geo.admin.ch/ch.swisstopo.swisssurface3d-raster/swisssurface3d-raster_2018_2683-1250/swisssurface3d-raster_2018_2683-1250_0.5_2056_5728.tif): https://data.geo.admin.ch/ch.swisstopo.swisssurface3d-raster/swisssurface3d-raster_2018_2683-1250/swisssurface3d-raster_2018_2683-1250_0.5_2056_5728.tif.
+
+    -   Hint: You can directly provide the links in R, no need to download it first.
+
+2.  How tall is the Y25 building at Irchel? Use the following coordinates: (lat=47.3978, lon=8.5505). Don't forget to adjust the CRS. Hint: the DTM shows the height of the terrain, the DSM shows the height of the terrain + buildings and vegetation.
+
+# Hints
+
+-   You can run another R script using `source(“path_to_script.R”)`. All objects defined in this script will be available in your environment.
+
+-   When using `st_intersects` in a `filter()`, you will have to set sparse to `FALSE`:
+
+    ```{r, eval=FALSE}
+    df |> filter(st_intersects(geometry, other_df, sparse=FALSE) |> as.vector())
+    ```
+
+-   Use `st_drop_geometry()` to translate an `sf` data frame to a normal tibble.
+
+-   `st_area()` returns the area with units attached. To plot the area values, you will need to drop the units by importing the units package (`library(units)`) and removing the units with `drop_units(area)`.
+
+-   After loading the raster, the data layer has a long and cryptic name. You can rename it with `names(raster_object) <- c("new_layer_name")`.

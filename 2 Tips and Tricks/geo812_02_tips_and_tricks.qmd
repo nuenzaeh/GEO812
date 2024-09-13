@@ -1,0 +1,167 @@
+---
+title: "GEO 812 -- Tutorial 2: Tips, tricks and cautionary tales"
+author: "Peter Ranacher & Takuya Takahashi"
+date: '`r Sys.Date()`'
+format: 
+  html:
+    code-fold: false
+    embed-resources: true
+    number-sections: false
+    fig_caption: yes
+    toc: true
+    toc-location: left
+editor: visual
+---
+
+# Learning Objectives
+
+This tutorial covers how to make R analyses transparent and reproducible, how to work collaboratively, and where to find help when needed. The tutorial has the following learning objectives:
+
+-   You can write reproducible and transparent R code.
+-   You know how to collaborate on a project, sometimes even simultaneously.
+-   You know where to ask for help in times of trouble.
+
+# Reproducibility
+
+> "Reproducible science is when anyone (including others and your future self) can understand and replicate the steps of an analysis, applied to the same or even new data."
+
+Reproducible science is also about acknowledging your sources, so we should tell you that we stole this catchy description verbatim from this website [Open Reproducible Science](https://www.earthdatascience.org/courses/intro-to-earth-data-science/open-reproducible-science/get-started-open-reproducible-science/). In short, reproducibility strives to make scientific methods, data, and outcomes accessible to everyone. For a young aspiring researcher like you, this means:
+
+-   Be transparent when collecting and analysing your data and deriving your outcomes.
+-   Make your data and your code publicly available.
+-   Communicate your results clearly and openly.
+
+Here are three suggestions for organising and sharing your R code to ensure reproducibility:
+
+1.  Organise your code into sections or code blocks, and include comments to explain each part.
+2.  Clearly explain the specific steps of your workflow, focusing on the "why" rather than the "what." In many cases, the "what" can be deduced directly from your code, while the "why" remains a mystery without explanation.
+3.  Consolidate your analysis into a single pipeline that performs all steps from reading in the raw data, performing your analysis, explaining your thought process, and outputting and interpreting your results.
+
+## R Quarto
+
+The R Quarto plugin offers a great way to follow all these suggestions and adhere to the principles of reproducible science. R Quarto is an open-source publishing system for communicating your analysis in R using articles, websites, blogs, books, slides, and more. With R Quarto, you can easily embed your code, visuals, and accompanying text in a single, beautifully formatted document to communicate your results.
+
+You might have already guessed it: all the tutorials in this course use R Quarto. We do not provide more in-depth instructions on how to use R Quarto. Instead, you can use the tutorials as templates for creating your own R Quarto documents and visit the [Quarto website](https://quarto.org/docs/computations/r.html) when things are unclear.
+
+# Collaborative work
+
+> "No man is an island, Entire of itself."
+>
+> — John Donne
+
+This first line of a famous poem also applies to coding in R. Rather than hacking away on your own, you'll likely collaborate with your peers and mentors on projects. Collaborative coding offers many advantages. It can improve code quality and significantly reduce errors due to multiple perspectives and reviews. The development process likely becomes faster, and there is continuous improvement as team members learn from each other and implement best practices. Additionally, collaborative coding often results in better documentation, as team members need to understand and build upon each other's work. However, collaborative coding also poses some challenges. Maintaining code quality, consistency, and documentation can be difficult, especially for beginners, as can establishing a workflow and managing processes. Additionally, collaborative coding often relies on dedicated software like GitHub, which users need to understand and manage.
+
+Much of collaborative coding relies on version control. Version control helps you keep a detailed record of changes to code and other content, allowing you to revert to previous versions if needed. Here are two strategies for effectively managing version control, depending on your willingness to explore additional software and get your hands dirty.
+
+![How not to version control.](images/final_doc.png)
+
+1.  Manual version control
+
+    Save your R script with a date and your name in a folder that all team members can access, such as Google Drive, SWITCHdrive, Dropbox, or a shared course folder.
+
+2.  Version control software
+
+    More advanced tools provide distributed version control, which supports multiple people working on a project simultaneously. These tools help manage and review changes, resolve conflicts, and merge different branches of a project into the main document. They ensure smooth collaboration and minimise disruptions caused by concurrent edits.
+
+## Git and GitHub
+
+Git allows you to manage your code and keep a record of modifications on your own machine. GitHub extends this functionality by providing a remote location on the Internet where you can back up, share, and collaborate on code with others. GitHub helps synchronise code across different versions, test changes without losing the original code, and facilitate team collaboration.
+
+For those new to Git and GitHub, there are excellent resources available on the Internet. We recommend this [Git and GitHub tutorial for beginners](https://product.hubspot.com/blog/git-and-github-tutorial-for-beginners) to get started and this [quick guide on the basics](https://rogerdudler.github.io/git-guide/) for when you need a refresher.
+
+# Asking for help in times of trouble
+
+Starting to learn a new coding language can be challenging, and it's helpful to have resources available when you need assistance. This document will describe three techniques for finding help in times of trouble:
+
+-   Use help in R
+-   Search for help on the internet.
+-   Ask artificial intelligence (AI) for additional support.
+
+We'll quickly describe when to use each of them.
+
+## R's help function
+
+R's help function — `help()` or `?` — is a convenient, offline resource for quickly getting assistance with R. This function provides access to the offline documentation pages for R functions, datasets, and other objects. To use it, you need to know the name of the function or package you want to query. For example, `?mean` will open the help page for the `mean` function, while `help(package="tidyverse")` will open the documentation page for the `tidyverse` package. You can use `?` to understand the arguments and output of a specific function. Note that we suppressed executing the below Quarto code, as `?` opens a new HTML page when called from within Quarto, which we wanted to avoid. Feel free to copy and paste the function into your local Console to execute it.
+
+```{r rhelp, eval=FALSE}
+?(mean)
+help(package="tidyverse")
+```
+
+R’s help system can do more than that. For example, if you forget how to use R’s `lm` function to fit a linear model, you can prompt R to give examples of how to apply the function correctly. You can use `example()` when you are unsure about the type of data to provide to a function.
+
+```{r help example}
+example(lm)
+```
+
+A vignette is a guide to a package, similar to a book chapter or an academic paper. It explains the problem the package is designed to address and demonstrates how to solve it. A good vignette categorises functions into useful groups and shows how to coordinate multiple functions to tackle problems. You can use vignettes when trying out a new package to understand its design philosophy and functionality. Again, we suppressed the output in the below Quarto code, as `vignette` opens a new HTML page when executed from within Quarto. Feel free to copy and paste the function into your local Console to execute it.
+
+```{r vignette, eval=FALSE}
+vignette("ggplot2")
+```
+
+These are just some of the useful functionalities in R's help system. You can find more information on the website [Getting Help with R](https://www.r-project.org/help.html).
+
+## Find help online
+
+There are several internet search sites specialized for R-related queries. [search.r-project.org](https://search.r-project.org) and [RSeek](https://rseek.org/) allow you to search resources on the R Home Page and on CRAN (e.g., help files, manuals, and package vignettes). Additionally, [Stack Overflow](https://stackoverflow.com/) is a valuable resource for programming help and discussions. Topics on Stack Overflow are tagged, with “r” being a very popular tag. You can either browse past discussions or ask a new question. Most questions have already been asked and answered, so browsing existing discussions should **always** be your first step. You can use tags to search for specific problems and evaluate the reliability of answers by checking up-votes and user credibility. If you’re asking questions on Stack Overflow, make sure that they are precise and on topic. Avoid asking questions that have already been answered, and post your questions in English.
+
+You can turn to Stack Overflow when you receive an error message you don’t understand. Alternatively, you can copy and paste the error message into Google to see where it leads, which frequently directs you to Stack Overflow, anyway.
+
+## Artificial Intelligence (AI)
+
+Let’s face it: When encountering a coding problem, your first point of help will likely be ChatGPT or one of its related tools. This approach is generally encouraged as long as you follow these [guidelines](https://www.mnf.uzh.ch/en/studium/rund-ums-studium/Studium-und-KI.html) and understand that AI is not perfect: ultimately, the responsibility for writing correct code lies with you. One way to increase your chances of receiving a reasonable response is to provide the AI with a meaningful prompt. Here is an example of a good prompt that is likely to lead to a useful response from ChatGPT or other AI tools:
+
+*Write R code for the "gapminder" package to find the top five countries by life expectancy in the most recent year.*
+
+Why is this a good prompt? First, the prompt indicates what language should be used (R), it gives the library (`gapminder`), and it is explicit in what it wants to find (top five countries by life expectancy in the most recent year).
+
+In comparison. Here is a bad prompt. *Write code to find out where people live longest.*
+
+You can try out the two prompts and compare your results.
+
+# More tips and tricks
+
+Here are some additional tips and tricks for writing code in R we find useful, presented in no particular order:
+
+## Data management
+
+Before starting a project in R, think about the most useful folder structure for your project. A well-organised folder structure might include a *script* folder for storing all your `.R` scripts and `.qmd` Quarto scripts, a *data* folder for both raw and derived data files and a *figures* folder for your plots and figures. Additionally, keep the `.RProj` project file in the root directory of your project.
+
+## Don't mouse.
+
+In general, avoid using the mouse for pieces of your analytical workflow, such as loading a dataset or saving a figure! Rather, use a script where you write down all steps of the workflow. This helps you to easily reproduce your analysis step by step if needed.
+
+## Example data
+
+R provides several example datasets that you can access for practice and experimentation. To list all available datasets, use the `data()` function.
+
+```{r example data, eval=FALSE}
+data()
+
+```
+
+You can then load a specific dataset, e.g. the Lake Huron data set, and experiment with it to better understand its structure and contents.
+
+```{r example lakehuron, eval=FALSE}
+LakeHuron
+```
+
+## Writing good code
+
+When writing code in R, include comments that explain the rationale behind your code rather than merely describing what the code does. In R Quarto, you can add these comments as prose either above or below the code blocks. This helps others (and yourself) understand the purpose of your code more clearly. In an R script (.R), you can add comments with (`#`).
+
+Ensure that file names are meaningful and end with `.R` (if using an R script) or `.qmd` (if using a Quarto). For variable and function names, use lowercase letters and separate words with an underscore (`_`). Variable names should be nouns, while function names should be verbs. Keep names concise and relevant to avoid confusion with existing functions or variables.
+
+Place spaces around operators like `=`, `+`, `-`, and `<-`, and always add a space after a comma, but never before one.
+
+Limit your code lines to 80 characters to ensure readability and compatibility with various formats. Finally, use `<-` for assignments instead of `=`, as it is the conventional practice in R.
+
+# Exercise
+
+Download the `flight_data_amm.csv` file from OLAT. The data were collected by the Department's [Air Miles Monitoring group](https://www.geo.uzh.ch/en/department/sustainability/air-miles.html) as part of their efforts to reduce aviation-induced emissions. It contains anonymised flight records (origin-destination pairs) for all flights taken by the Department of Geography in 2022.
+
+1.  Read the data into R. Find information online to help with this.
+2.  Install and load the `tidygeocoder` package. Use this package to add geolocation data for each `origin` and `destination` in the tibble. Refer to the package's vignette to learn how to do this. Your final data frame should include the columns `origin_lat`, `origin_long`, `destination_lat`, and `destination_long`, with the coordinates of the geocoded origins and destinations.
+
+See you in the next tutorial!

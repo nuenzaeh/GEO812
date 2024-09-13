@@ -1,0 +1,442 @@
+---
+title: "GEO 812 -- Tutorial 3: Data types and functions"
+author: "Peter Ranacher & Takuya Takahashi"
+date: '`r Sys.Date()`'
+format: 
+  html:
+    code-fold: false
+    embed-resources: true
+    number-sections: false
+    fig_caption: yes
+    toc: true
+    toc-location: left
+editor: visual
+---
+
+# Learning Objectives
+
+In this tutorial, you explore R’s most important data types and you get to know functions in more detail. The tutorial has the following learning objectives:
+
+-   You can name and explain R’s most important data structures.
+-   You can explain loops and understand why **not** to use them in R
+-   You know how to work with functionals.
+-   You can write your own functions and test and debug them.
+
+In this tutorial, you will mainly work in base R, but you will also need some data from the `tidyverse`.
+
+```{r packages, message=FALSE}
+
+library(tidyverse)
+```
+
+# Data Types
+
+## Vectors
+
+Vectors are the most basic objects in R. **Atomic vectors** are sequences of data elements of the same type. **Lists** are recursive vectors, meaning they can contain atomic vectors and other lists. All vectors have a type and a length, which describe the kind of data they hold and how many elements they contain. Some vectors also have attributes which provide additional information about the data.
+
+![The Dalton brothers Joe, William, Jack and Averell are 120.5, 150.4, 170.3 and 190.0 cm tall. William and Jack have committed 10 crimes, Averell 5 and Joe 136. They are smart, except for Averell.](images/daltons.jpg)
+
+We can store the above information on the Daltons into four different vectors.
+
+```{r atomic vectors}
+
+names_daltons <- c("Joe", "William", "Jack", "Averell")
+height_daltons <- c(120.5, 150.4, 170.3, 190.0)
+crimes_daltons <- c(136L, 10L, 10L, 5L) 
+smart_daltons <- c(TRUE, TRUE, TRUE, FALSE)
+
+```
+
+The `c()` function combines multiple values into a single vector. If a value is a character string (e.g., `"Joe"`), it must be enclosed in quotes. To indicate that a number is an integer, append an `L` (e.g., `136L`). All values in a vector must be of the same type. The four main types are:
+
+-   character: stores text strings, for example, `"Averell"`.
+-   double: stores decimal numbers, for example `120.5`.
+-   integer: stores whole numbers, for example `136`.
+-   boolean: stores logical values, which are `TRUE` or `FALSE`.
+
+### Inspecting vectors
+
+You can inspect existing vectors and find out which type they are.
+
+```{r get type}
+typeof(names_daltons)
+```
+
+You can also check if an object is a vector and if it is of a specific type.
+
+```{r check type}
+
+is.vector(smart_daltons)
+is.character(names_daltons)
+is.integer(height_daltons)
+
+```
+
+### Indexing and subsetting
+
+You can access and manipulate specific elements in a vector, commonly referred to as indexing and subsetting. For vectors, you can select elements by their index positions or logical conditions.
+
+**Subset by index position**
+
+Here is how you select an element of a vector by its index position. Let's say you wanted to get the third of the Daltons' names.
+
+```{r subsetting 1}
+names_daltons[3]
+```
+
+Now, get the second to fourth of the Daltons' names.
+
+```{r subsetting 2}
+names_daltons[2:4] 		
+```
+
+Finally, get the second and fourth of the Daltons' names
+
+```{r subsetting 3}
+names_daltons[c(1, 4)]
+```
+
+**Subset by logical condition**
+
+Subsetting by a logical condition first evaluates each element of the vector to see if it meets the condition. If the condition is true for an element, that element is included in the subset. For example, you can get the names of the Daltons who are taller than 125 cm.
+
+```{r}
+index <- height_daltons > 125
+names_daltons[index]
+```
+
+### Coercion
+
+Coercion is the process by which all elements of an atomic vector are automatically converted to a common data type to ensure uniformity. This is necessary because atomic vectors can only hold elements of the same type. If you try to combine different types within a single atomic vector, R will coerce the elements into the most flexible type that can accommodate all values. For instance, if you mix TRUE (boolean), 1.6 (double), and "hello" (character) in a vector, the boolean and double values will be converted to characters since characters are more flexible. This automatic conversion ensures consistency within the vector, but it can sometimes lead to unintended results, making it both a useful and potentially frustrating feature when working with mixed data types.
+
+```{r coercion}
+a <- c(TRUE, 1, "hello")
+typeof(a)
+```
+
+![Coercion can be annoying.](images/pepe.png)
+
+### Recycling
+
+Speaking of useful but annoying, when performing operations like adding, subtracting, or multiplying two vectors in R, they do not need to have the same length. If the vectors are of different lengths, the shorter vector is recycled to match the length of the longer vector. This feature, known as vector recycling, can be both handy and troublesome. For example, to add 10 cm to each of the Daltons' heights, you could use any of the following methods:
+
+-   Add a vector of the same length as the Daltons' heights:
+
+    ```{r add height 1}
+    height_daltons + c(10, 10, 10, 10)
+    ```
+
+-   Add a vector with one element which R will recycle across the entire length of the Daltons' heights:
+
+    ```{r add height 2}
+    height_daltons + c(10)
+    ```
+
+-   Use a vector shorter than the Daltons' heights vector, in which case R will repeat the shorter vector until it matches the length of the longer vector if the longer is a multiple of the shorter:
+
+    ```{r add height 4}
+    height_daltons + c(10, 10)
+    ```
+
+## Lists
+
+Lists in R are ordered collections that can hold a variety of elements, including different types of objects and even other lists. This flexibility allows lists to be used to organise complex data structures. For instance, you can collect the names and heights of the Daltons into a list. The list below has named elements (`name` and `height`), but naming them is not mandatory.
+
+```{r lists 1}
+daltons_list <- list(names = names_daltons, 
+                     height = height_daltons)
+```
+
+Since lists are so flexible, you can easily place the list you just created into another list, along with the crimes the Daltons committed.
+
+```{r list 2}
+daltons_list2 <- list(daltons_list, crimes_daltons)
+```
+
+The resulting `daltons_list2` is unnamed and contains a list (`daltons_list`) and a vector (`crimes_daltons`).
+
+### Subsetting
+
+There are two ways to subset lists. We can subset a list with single square brackets (`[]`) and return a subset of the original list that still retains list properties.
+
+```{r subset list 1}
+daltons_list[2]
+```
+
+The code above returns a subset of `daltons_list` that is a new list containing only the element at the second position of the original list. Similarly, we can subset the first and second elements:
+
+```{r subset list 2}
+daltons_list[1:2]
+```
+
+In contrast, we can use double square brackets (`[[]]`) to extract the actual object at a specified position within a list. For example, the code below retrieves the object stored in the second position of the list, `crimes_daltons`, providing direct access to the underlying atomic vector:
+
+```{r subset list 3}
+daltons_list[[2]]
+```
+
+There is an equivalent notation to achieve the same result by subsetting the object using the `$` sign, which works when the list elements are named.
+
+```{r subset list 4}
+daltons_list$height
+```
+
+## Matrices
+
+Matrices are vectors with two dimensions, organised into rows and columns.
+
+![For two years, the Daltons repeatedly robbed cities in Colorado and Kansas. In the first year, they robbed two cities in Colorado and four in Kansas; in the second year, they robbed five in Colorado and three in Kansas.](images/daltons_robbery.jpg)
+
+We can store the information about the criminal activities of the Daltons in matrix:
+
+```{r matrix}
+robberies_daltons <- matrix(data = c(2, 4, 5, 3), 
+                            ncol = 2, nrow = 2, byrow = T)
+
+```
+
+`ncol` and `nrow` specify the number of columns and rows in a matrix. The `byrow` argument determines how the data is filled into the matrix. When `byrow` is set to TRUE, the matrix is populated row-wise: the elements are filled into the first row first, then the second row, and so on. Here, the row is the year.
+
+### Subsetting
+
+As matrices have two dimensions, we need two indices to point to a single cell. Let's get all robberies in the first year and second state.
+
+```{r, sunbset matrix 1}
+robberies_daltons[1, 2]
+```
+
+We can also get an entire row of a matrix or an entire column. When you want the entire row, you leave the column index empty. For example, here is how you get all robberies in the second year.
+
+```{r subset matrix 2}
+robberies_daltons[2, ]
+```
+
+When you want the entire column, you leave the row index empty. For example, here is how you get all robberies in the first state.
+
+```{r subset matrix 3}
+robberies_daltons[, 1]
+```
+
+## Data frames
+
+A data frame is a table or two-dimensional structure. You encountered data frames in tutorial 2, which referred to them as tibbles, the preferred notation in `tidyverse`. Data frames share properties with both matrices and lists. Like matrices, they have rows and columns, making them ideal for handling and analysing rectangular data sets. Like lists, each column in a data frame can be of a different type (e.g., character, boolean). We can combine the Daltons' heights and names in a data frame.
+
+```{r data frames 1}
+daltons_df <- data.frame(names = names_daltons,
+                         height = height_daltons)
+```
+
+### Subsetting
+
+Since data frames are both matrices and lists, we can subset them like a matrix or a list. Here is the matrix way of subsetting `daltons_df` and getting the `height` column, the second column in the data frame.
+
+```{r df subset 1}
+daltons_df[, 2]
+```
+
+And here is the list-way for doing the same thing.
+
+```{r df subset 2}
+daltons_df[[2]]
+daltons_df$height
+```
+
+And, of course, you can also use `select` from the `tidyverse` to subset a column from a data frame. This flexibility and choice make R dynamic and versatile, but sometimes a bit confusing and overwhelming.
+
+## Factors
+
+Factors are vectors whose elements take a fixed set of possible values. They represent categorical data.
+
+![Lucky Luke categorises the Daltons into three levels of danger: deadly, dangerous and harmless. Joe is deadly, Jack and William are dangerous, Averell is harmless.](images/joe_dalton.jpg)
+
+We can capture Lucky Luke's assessment of the Daltons with factors.
+
+```{r factors}
+
+danger_daltons <- factor(x = c("deadly", "dangerous",
+                           "dangerous", "harmless"),
+                         levels = c("deadly", "dangerous", "harmless"))
+```
+
+In the factor function, `x` specifies the values, while `levels` defines the allowed values. Let's try changing the value of the third element to `"extremely dangerous"` and see what happens.
+
+```{r factors not allowed}
+danger_daltons[3] <- "extremely dangerous"
+```
+
+R throws a warning and sets the value to `NA` because `"extremely dangerous"` is not one of the allowed values. Factors are ideal when working with a fixed set of values and you want to ensure that no one (including your future self) accidentally assigns a value outside the predefined levels.
+
+# Functions
+
+In R, as in any programming language really, you should aim to write code that is clear, concise, and easy to follow. Concise and clear code makes it
+
+-   easier to understand the intent of your code
+-   simpler to respond to changing requirements, as changes need to be made in only one place
+-   less prone to bugs since each line of code is used in more than one place
+
+As a rule of thumb, if you find yourself copying and pasting code more than twice, consider writing a function instead.
+
+## The building blocks of functions
+
+Imagine you receive the following task:
+
+> Compute the mean for every column in `msleep`, but only if the column contains numeric data.
+
+Your first intention might be to find out which columns are in `msleep`, then test each one for numeric data, and if successful, compute the mean. While that approach would be correct, it would be madness to write code like that.
+
+Instead you should generalise the task and break it down into subtask that can be turned into a functions that do the heavy-lifting for you:
+
+1.  Iterate through all columns in `msleep`.
+2.  If the column is numeric, compute the mean. If not, don’t.
+
+The first task is commonly referred to as a loop, the second as a conditional statement. Loops and conditional statements are two of the main ingredients to make your code clear and concise. Plus, they happen to be the two main ingredients of functions.
+
+### Loops
+
+There are two types of loops:
+
+-   `for` loops execute a block of code a specified number of times. For example, you might use a `for` loop to compute the square root for all integers from 1 to 100 or loop through all columns in `msleep`.
+
+-   `while` loops continue to execute a block of code until a particular condition is met. For instance, you could use a `while` loop to compute the sum of all integers until that sum exceeds 100.
+
+"Well, then, show me in an example of a loop in R", you might ask. We won't. R has functions for both `for` and `while` (you can find out more [here](https://adv-r.hadley.nz/control-flow.html)), but they are usually verbose and inefficient. There are better ways to achieve the same thing. Don't get this wrong. Loops offer a great view of what is supposed to happen, as they require an understanding of the data and the process to carry out. So you should know what `for` and `while` loops are doing in theory, but get rid of them whenever possible. Here, we will briefly discuss conditional statements and then come back to explain R's alternatives to loops in detail.
+
+### Conditional statements
+
+A condition is a logical expression that is either `TRUE` or `FALSE`. When the condition is `TRUE`, the consequence is executed. When the condition is `FALSE`, the alternative consequence is executed.
+
+![There is no rock below the coyote. When there is no rock below the coyote, the coyote falls.](images/coyote.jpg)
+
+We can encode the fate of the poor coyote in the following conditional statement.
+
+```{r coyote falls}
+
+rock_below <- FALSE
+
+if (!rock_below) {
+  coyote_falls <- TRUE
+} else {
+  coyote_falls <- FALSE
+}
+
+coyote_fall <- TRUE
+```
+
+The expression in curly brackets `{}` after the if statement gives the consequence, and the expression after the `else` statement gives the alternative consequence.
+
+### Getting rid of loops
+
+R offers two elegant ways of repeatedly executing things without using loops: vectorisation and functionals.
+
+**Vectorisation**
+
+R can apply an operation to an entire vector at once rather than looping through individual elements. Here are two vectors, `a` and `b`.
+
+```{r a and b }
+a <- c(1, 2, 4, 1)
+b <- c(2, 1, 5, 1)
+```
+
+To add them, you could loop over each element in `a` and add it to the corresponding element in `b`. [Don't]{style="color:red;"}. Use vector addition instead.
+
+```{r add a and b}
+
+a + b
+```
+
+Many R functions implicitly use vectorisation (and your functions should too!) For example, to find the the average total sleep time in the `msleep` data, you could iterate over each row in the data frame, sum the values in the `sleep_total` column, and then divide by the number of rows. [Don't]{style="color:red;"}. Instead, subset the relevant columns and use the `mean` function, which does the same thing using vectorisation.
+
+```{r vectorisation sleep}
+mean(msleep$sleep_total, na.rm = TRUE) 
+```
+
+**Functionals**
+
+Functionals are higher-order functions that operate on other functions. For example, the `lapply()` function takes a list or a data frame and a function as inputs, calls the function for each element of the list or data frame, and returns a list where each element contains the result of applying the function to the corresponding element. If that sounds confusing, congratulations, you are absolutely normal.
+
+Let's look at an example and come back to the initial task of computing the mean for every column in `msleep`, but only if the column contains numeric data. Here is how that's done with `lapply`.
+
+```{r lapply}
+msleep_col_means <- lapply(msleep, function(x) 
+  if (is.numeric(x)) mean(x, na.rm = TRUE) else NULL)
+```
+
+Here is the code step by step. The `lapply()` function takes the `msleep` data as input and applies the function defined in `function(x)` to each column in the data frame. The function checks if the input argument `x`, i.e. a column of the data frame, is numeric. If it is, the function computes the mean of that column with `na.rm = TRUE` to remove any missing values; if it isn't, the function returns `NULL`. On a side note, `is.numeric()` checks if an atomic vector is of type integer or a double.
+
+## Writing your own functions
+
+You have seen numerous examples in the tutorials where functions were used. Now it's time to write your own functions. The last section on functionals already gave you a hint on how to define a new function using the `function()` statement, although this function was only used on the fly in the `lapply` example. We can also define functions, assign them to objects, and use them repeatedly. Let's say you wanted to write a function to calculate the cube root of any given number `x`. Here is what such a function would look like in R.
+
+```{r write function 1}
+cube_root <- function(x) {
+  y <- x^(1/3)
+  return(y)
+}
+```
+
+In the code above, `cube_root` is the function name. The `function(x)` statement defines a new function, which takes one argument called `x`. We could use any other name for the argument, but `x` seems appropriate here. The line `y <- x^(1/3)` computes the cube root of `x` and assigns it to the variable `y`. The `return(y)` statement then returns this result. Let's test the function.
+
+```{r cube root 1000}
+cube_root(1000)	
+```
+
+Seems to work as expected. Let's try again, this time with a negative number.
+
+```{r cube root -1000}
+cube_root(-1000)
+```
+
+That's weird. We know that the cube root of $-1000$ is $-10$, because $-10 \cdot -10 \cdot -10 = -1000$. The `^` operator in R seems to have trouble handling negative bases raised to fractional powers in a straightforward way. This makes sense, as each negative number has three cube roots, which are typically complex numbers with imaginary components. So, assigning a single real number is problematic.
+
+The behaviour of the cube root function highlights a more important issue. You cannot be sure that users (including your future self) will execute the function the way you intended. Let's try again with something more bizarre. Assume you wanted to compute the cube root of `Busta Rhymes`. Yes, that's nonsense, and yes, that's intended.
+
+```{r cube root bust,  error=TRUE}
+cube_root("Busta Rhymes")
+```
+
+As expected, the code throws an error, but users might struggle to interpret the error message `non-numeric argument to binary operator` since it comes from a downstream function that your function calls. So, what can you do to avoid improper usage of your functions?
+
+## Verifying the input data
+
+You can verify the input data to ensure that the data given to the function are of the correct type. If you expect different types of input data, you can make your function handle them correctly.
+
+```{r verifying input}
+
+cube_root <- function(x) {
+  if (!is.numeric(x)) stop("x must be a number")
+  result <- ifelse(x >= 0, x^(1/3), -(-x)^(1/3))
+  return(result)
+}
+
+```
+
+First, the function checks if `x` is numeric using `is.numeric(x)`, and if not, it stops execution and returns an error message `"x must be a number"`. This is similar to before, but now it is your function that throws the error, guiding the user on what needs to be corrected. It still makes your functions crash but in a controlled manner.
+
+If `x` is numeric, the function then computes the cube root. For non-negative values of x, it calculates the cube root directly using `x^(1/3)`. For negative values of `x`, it calculates the cube root of the positive value of `x` (i.e., `-x`) and then negates the result to account for the original negative input. Finally, the computed cube root is returned. This approach ensures that the cube root of negative numbers is handled correctly, avoiding the `NaN` result that can occur with direct exponentiation of negative bases in R.
+
+```{r busta 2, error=TRUE}
+cube_root("Busta Rhymes")
+```
+
+![Sometimes functions might crash, but always ensure they do so in a controlled manner.](images/willi.jpg)
+
+## Debugging
+
+When your function does not work or produces incorrect results, you can debug the function and fix the issues. Here is a video that shows debugging in R step by step {{< video https://youtu.be/q_v2C0KHWSI?si=NM_0yZCLc_OYNvHL >}}
+
+# Exercise
+
+Download the `flight_data_amm_coords.csv` file from OLAT. The data are the same as in tutorial 2, but the origin and destination have already been geocoded for you (see exercise, tutorial 2).
+
+1.  Write a function `d_great_circle` that computes the great-circle distance ($d$) between two points on Earth. This is the equation for $d$: $$ d = 2 r \arcsin(\sqrt{\sin^2(\frac{\varphi_2 - \varphi_1}{2}) + \cos(\phi_1) \cos(\phi_2) \sin^2 (\frac{\lambda_2 - \lambda_1}{2})}) $$ where $\varphi_1$ and $\varphi_2$ are the latitude of two locations on the Earth surface $\lambda_1$ and $\lambda_2$ are the longitude and $r$ is Earth radius. Your function should take as inputs the latitudes and longitudes of two locations and the radius (with a default value of 6371 km).
+
+2.  Perform data validation on the inputs to the function. Check whether the inputs are numeric and whether they fall within valid ranges for latitude and longitude.
+
+3.  Compute the distance between the origin-destination pairs in `flight_data_amm_coords.csv`. Use `mutate()` (as described in tutorial 2) and `apply()`. Hint: When using `mutate` add a [`rowwise`](https://dplyr.tidyverse.org/articles/rowwise.html) to your pipeline to apply the function to each row individually. Can you guess why? Try it without `rowwise` and interpret the error message!
+
+Note: In R, `cos()` and `sin()` take radians as input, so ensure you convert latitude and longitude from degrees to radians. Here is how:
+
+```{r deg2rad}
+deg2rad <- function(deg) {(deg * pi) / (180)}
+```

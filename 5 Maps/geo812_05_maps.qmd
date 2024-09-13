@@ -1,0 +1,291 @@
+---
+title: "GEO 812 -- Tutorial 5: Maps!"
+author: "Peter Ranacher & Takuya Takahashi"
+date: '`r Sys.Date()`'
+format: 
+  html:
+    code-fold: false
+    embed-resources: true
+    number-sections: false
+    fig_caption: yes
+    toc: true
+    toc-location: left
+editor: visual
+---
+
+```{r libraries}
+#| warning: false
+#| message: false
+library(tidyverse)
+library(sf)
+library(terra)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(leaflet)
+```
+
+# Learning Objectives
+
+Welcome to the final tutorial of GEO 812, "Getting Started with R for Spatial Analysis." We are approaching one of this course's key goals: creating your own map in R. In this tutorial, you will create
+
+-   a static map with `ggplot`
+
+-   an interactive map with `leaflet`
+
+# Read the spatial data
+
+In the previous tutorial on spatial data, we learned how to read spatial data and create `sf` objects for vector data and `terra` objects for raster data. Here, we will explore different ways to read spatial data saved in various formats.
+
+We will map the point locations of languages in the ancient Near East. The same data is provided in different formats, so you can use the script below to test and load the data into R in the format you prefer (the resulting data will be the same). Conveniently, the `st_read` function automatically converts your data into a valid `sf` object.
+
+```{r load sf}
+#| warning: false
+#| message: false
+#| results: hide
+
+# Shapefile
+languages_sf <- st_read("data/language_locations/shapefile")
+
+# GeoPackage
+languages_sf <- st_read("data/language_locations/geopackage/language_points.gpkg")
+
+# GeoJSON
+languages_sf<- st_read("data/language_locations/geojson/language_points.geojson")
+```
+
+If your vector data is in a different spatial format, there’s a good chance that `sf` recognises it and `st_read` can import your data. Give it a try.
+
+More often than not, your point data will be in a CSV file with columns for longitude and latitude (or long and lat, x and y, east and north). We can easily load this data into R as a data frame and then convert it into an `sf` object.
+
+```{r load csv}
+#| warning: false
+#| message: false
+
+languages_sf <- read_csv("data/language_locations/csv/language_points.csv") |>
+  st_as_sf(coords = c("lon", "lat"), crs = 4326)
+```
+
+We will also include a digital elevation model. You can use the script below to load the data into R. The `rast` function from the `terra` package automatically converts the data into a `terra` object.
+
+```{r elevation}
+elevation <- rast("data/elevation/elevation.tif") 
+```
+
+It’s a good idea to double-check the CRS. You can use the `st_crs` function for `sf` objects or the `crs` function for `terra` objects. Once you've verified the CRS, you can stop worrying about it. Here, we retrieve the CRS information in WKT format. Note the slightly different syntax for doing this in `sf` and `terra`.
+
+```{r crs}
+
+st_crs(languages_sf)$proj4string
+crs(elevation, proj=T)
+```
+
+# Mapping!
+
+Finally, you are ready to map your data. This tutorial focuses on two types of maps: static and interactive maps.
+
+**Static maps** are standalone images typically found in (high-resolution) print publications. Their primary advantage is that the map developer, which is you in this case, can control all elements that appear on the map and their appearance, including colours, fonts, stroke widths, and more. However, this freedom and flexibility come with a cost. The map developer must explicitly define the basemap, which is the reference map on which to overlay data, and provide all necessary data. For example, when mapping languages in the ancient Near East, the basemap should display continents, oceans, major cities, and rivers. We need to find this data and add it to the map.
+
+**Interactive maps** are typically found online and allow users to interact with them by zooming in and out, panning, and clicking. Usually, interactive maps overlay spatial data over an existing basemap, such as a raster image from OpenStreetMap or Google Maps. While interactive maps offer convenience, they do restrict design freedom.
+
+This tutorial creates the static map with the `ggplot2` package, an open-source data visualization package in R, and the interactive map with the `leaflet` package, an open-source library for mobile-friendly interactive maps. The two packages have different functionalities, requiring slightly different syntax, but the main steps for making a map are similar.
+
+-   *Create the basemap*. Basemaps serve as a reference map on which you overlay data. An individual basemap can be made of multiple vector or raster data or a single image. Basemaps are the foundation for your maps and provide context for your work.
+
+-   *Add your data to the basemap*, layer by layer. The last layer added will appear on top.
+
+-   *Style the map*, define the legend, add a title, change the colour scheme, and limit the extent of the map.
+
+## Static Maps
+
+Let's create a static map using `ggplot2`!
+
+### Create the basemap
+
+`ggplot2` does not come with its own basemap, so we need to build it ourselves. Fortunately, the `rnaturalearth` and `rnaturalearthdata` packages offers plenty of useful data for creating basemaps. Here, we load country polygons, ocean polygons, cities (as points), and rivers (as lines). Check out [`rnaturalearth`](https://cran.r-project.org/web/packages/rnaturalearth/vignettes/rnaturalearth.html) for many other physical and cultural data that make for a beautiful and useful basemap. We will also add the elevation raster to the basemap.
+
+```{r get basemap data, cache=T}
+#| results: hide
+rivers_sf <- ne_download(scale = 10, type = "rivers_lake_centerlines", 
+                      category = "physical", returnclass = "sf")
+
+oceans_sf <- ne_download(scale = 10, type='ocean', category = 'physical', 
+                      returnclass="sf")
+
+countries_sf <- ne_countries(scale = "medium", returnclass = "sf")
+
+cities_sf <- ne_download(scale = 10, type='populated_places', category = 'cultural', 
+                      returnclass="sf") |> 
+  filter(POP_MAX > 3000000)
+```
+
+Next, we use the `ggplot()` function to initialise a new `ggplot` object and build the basemap layer by layer. We can add both vector and raster data with the plus (`+`) symbol.
+
+```{r basemap}
+static_map <- ggplot() +
+  geom_sf(data=countries_sf, color=NA, fill = "white") + 
+  geom_raster(data = elevation |>
+                as.data.frame(xy = TRUE), aes(x = x, y = y, fill = MSR_50M), 
+              alpha = 0.8) +
+  geom_sf(data=oceans_sf, fill="#e7f5fe", color=NA) +
+  geom_sf(data=rivers_sf, color = "#e7f5fe") 
+
+static_map
+```
+
+As you can see, the basemap doesn't look good (yet).
+
+Here is a quick breakdown of the code above:
+
+-   `geom_sf` adds points, lines or polygons. The function recognises the type of vector in the `sf` object and maps it accordingly. Here, we use it for the country and ocean polygons and the river lines. The `color=NA` argument specifies no border colour, and `fill = "white"` fills the polygons with white colour.
+
+-   `geom_raster` adds spatial raster data. The function is a bit peculiar, as it does not recognise `terra` objects. Instead, we need to convert the raster to a data frame with `x` and `y` indicating latitude and longitude of each cell. Since a data frame is not an `sf` object, we also need to specify which columns should be mapped to the x-axis and y-axis, as well as which column should be used as the fill value (`aes(x = x, y = y, fill = MSR_50M)`).
+
+### Add your primary data
+
+Next, you can add your primary data to the map. Here, we add the languages.
+
+```{r primary data, warning=F}
+
+static_map <- static_map +
+  geom_sf(data=languages_sf, color = "white", size = 3) +
+  geom_sf(data=languages_sf, aes(color = family), size = 2) +
+  geom_sf_text(data=cities_sf, aes(label = NAME), size = 3) 
+
+static_map
+```
+
+Here is a breakdown of the code above:
+
+-   `geom_sf` adds the language points in `languages_sf`. The `aes(color = family)` argument maps the colour of the polygons based on the column `family`, and `size = 2` specifies the size of the of the point marker. Note that we add the data twice. We use one layer with a slightly bigger white marker to make the second layer with a smaller colour-coded marker better visible.
+
+-   `geom_sf_text` also adds vector data, but instead of geometries, it only adds text, in our case the names of major cities. Strictly speaking, this is part of the basemap, but we added it later because it does not look nice below the language data. The `aes(label = NAME)` argument specifies the column with the relevant text to display, and `size=3` sets the size of the text.
+
+Again, you can see the in-between stage of the map, which doesn't look beautiful (yet).
+
+### Style the map
+
+Now we add the last touches to the map, adding a legend and a title, and restricting the map extent to the Near East.
+
+```{r style}
+# Define colours
+family_colors <- c("Central Semitic" = "#ABDDDE", 
+                   "East Semitic"  = "#5BBCD6", 
+                   "Northwest Semitic" = "#046C9A",
+                   "Egyptian" = "#FF0000",
+                   "Elamite"  = "#F2AD00",
+                   "Hurro-Urartian" =  "#00A08A",
+                   "Indo-European" = "#ECCBAE",
+                   "Sumerian"  =  "#000000")
+
+
+# Map extent 
+lon_extent <- c(25, 55)
+lat_extent <- c(13, 43)
+
+static_map <- static_map +
+  scale_fill_gradientn(colours = grey.colors(100), 
+                       guide = NULL) +
+  scale_color_manual(values=family_colors, name = "Language family") +
+  coord_sf(xlim = lon_extent, ylim = lat_extent, expand = FALSE) +
+  ggtitle("Languages of the Ancient Near East") +
+  theme_void() 
+```
+
+Let's break down the code again:
+
+-   `family_colors` assigns (hexadecimal) colour codes to different language families. Each language family is associated with a specific colour.
+
+-   `lon_extent` and `lat_extent` define the longitude and latitude extent of the Near East.
+
+-   `scale_fill_gradientn()` is used to define a gradient scale for filling the elevation raster, using grey colours.
+
+-   `scale_color_manual()` assigns the colours in `family_colors` to represent different language families.
+
+-   `coord_sf()` adjusts the coordinate system for the map, sets the longitude and latitude extent defined earlier and ensures that the map is limited to this extent.
+
+-   `ggtitle()` sets the title for the map.
+
+-   `theme_void()` removes the default theme elements such as axes and grid lines, leaving only the map itself.
+
+And that's it. Here is the map. You can uncomment the second line and save the map, for example, as a PDF.
+
+```{r map, warning=FALSE}
+static_map
+#ggsave("anea.pdf")
+```
+
+## Interactive Maps
+
+You want to create an interactive map in `leaflet`. Awesome! Let's get started!
+
+### Create the basemap
+
+Building the basemap in `leaflet` is one line of code.
+
+```{r interactive}
+interactive_map <- leaflet() |> 
+  addTiles()
+```
+
+The `addTiles()` function adds the basemap from OpenStreetMap (OSM). Alternatively, many popular free third-party basemaps can be added using `addProviderTiles()`. See here for the [complete set of basemaps](http://leaflet-extras.github.io/leaflet-providers/preview/index.html).
+
+### Add your primary data
+
+Next, you can add your primary data to the map. Here, we add the languages and the digital elevation model.
+
+```{r primary data interactive}
+#| results: hide
+
+family_pal <- colorFactor(family_colors, languages_sf$family)
+
+elevCol <- colorNumeric(c("white", "black"), values(elevation),
+  na.color = "transparent")
+
+interactive_map <- interactive_map |>
+  #addRasterImage(elevation, colors = elevCol, opacity = 0.7) |>
+  addCircleMarkers(data = languages_sf, color = ~family_pal(languages_sf$family),
+                  stroke = FALSE, fillOpacity = 1, radius = 7,
+                  popup = languages_sf$name)
+```
+
+Let's break down the code:
+
+-   `colorFactor` creates a colour palette based on the `family_colors`. `leaflet` needs this vector to correctly color the languages.
+
+-   Similarly `colorNumeric` creates a colour palette for the raster data.
+
+-   `addCircleMarkers` adds circle markers to the map. The `colour` of the circle markers will be determined by the `family_pal` colour palette based on the language family column. Each circle marker will be coloured according to its corresponding language family.
+
+-   `addRasterImage` adds the elevation raster. We commented it out because it looks awkward. Feel free to add it back in.
+
+-   `stroke = FALSE` disables the stroke around the circle markers, `fillOpacity = 1` sets the opacity of the marker fill to full, `radius = 7` specifies the radius of the circle markers, and `popup = languages_sf$name` displays the name of each language as a popup when the marker is clicked.
+
+### Style the map
+
+Finally, we style the map and add a legend.
+
+```{r style interactive}
+interactive_map <- interactive_map |>
+  addLegend('bottomright', pal = family_pal, values = languages_sf$family,
+            title = 'Language family')
+```
+
+Let's break down the code:
+
+-   `addLegend` adds a legend to the map. `bottomright` specifies the position of the legend on the map.
+
+-   `pal = family_pal` specifies the colour palette to be used for the legend.
+
+-   `values` specifies the values that the legend should display.
+
+-   `title` sets the title of the legend.
+
+And here is your interactive map!
+
+```{r show interactive}
+interactive_map
+```
+
+# Exercise
+
+This tutorial does not include an exercise. Instead, we invite you to submit an assignment to earn credits for the course.

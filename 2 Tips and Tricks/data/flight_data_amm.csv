@@ -1,0 +1,422 @@
+year,origin,destination
+2022,Boston,Reykjavík
+2022,Reykjavík,Zurich
+2022,Zurich,Reykjavík
+2022,Reykjavík,Boston
+2022,Brest/Guipavas,Paris
+2022,Paris,Zurich
+2022,Zurich,Paris
+2022,Paris,Brest/Guipavas
+2022,Zurich,Edinburgh
+2022,Edinburgh,Zurich
+2022,Zurich,Edinburgh
+2022,Edinburgh,Zurich
+2022,Amsterdam,Zurich
+2022,Zurich,Amsterdam
+2022,Zurich,Warsaw
+2022,Warsaw,Zurich
+2022,Zurich,Helsinki
+2022,Helsinki,Tokyo
+2022,Tokyo,Helsinki
+2022,Helsinki,Zurich
+2022,Zurich,Helsinki
+2022,Helsinki,Tokyo
+2022,Tokyo,Helsinki
+2022,Helsinki,Zurich
+2022,Zurich,Madrid
+2022,Madrid,Almería
+2022,Almería,Madrid
+2022,Madrid,Zurich
+2022,Zurich,Tallinn
+2022,Tallinn,Zurich
+2022,Zurich,Tallinn
+2022,Tallinn,Zurich
+2022,Seattle,Reykjavík
+2022,Reykjavík,Zurich
+2022,Seattle,Reykjavík
+2022,Reykjavík,Zurich
+2022,Singapore,Zurich
+2022,Zurich,London
+2022,Athens,Zurich
+2022,Vienna,Frankfurt am Main
+2022,Frankfurt am Main,Bâle/Mulhouse
+2022,Bâle/Mulhouse,Vienna
+2022,Amsterdam,Zurich
+2022,Zurich,Amsterdam
+2022,Zurich,Vienna
+2022,Vienna,Addis Ababa
+2022,San Francisco,Zurich
+2022,Zurich,San Francisco
+2022,Edinburgh,Amsterdam
+2022,Amsterdam,Zurich
+2022,Zurich,Amsterdam
+2022,Amsterdam,Edinburgh
+2022,Newcastle,Amsterdam
+2022,Amsterdam,Zurich
+2022,Zurich,Amsterdam
+2022,Amsterdam,Newcastle
+2022,Singapore,Doha
+2022,Doha,Zurich
+2022,Geneva,Doha
+2022,Doha,Singapore
+2022,Colombo,Dubai
+2022,Dubai,Zurich
+2022,Zurich,Dubai
+2022,Dubai,Colombo
+2022,Colombo,Dubai
+2022,Dubai,Zurich
+2022,Zurich,Dubai
+2022,Dubai,Colombo
+2022,Colombo,Dubai
+2022,Dubai,Zurich
+2022,Zurich,Dubai
+2022,Dubai,Colombo
+2022,Colombo,Dubai
+2022,Dubai,Zurich
+2022,Zurich,Dubai
+2022,Dubai,Colombo
+2022,Colombo,Dubai
+2022,Dubai,Zurich
+2022,Zurich,Dubai
+2022,Dubai,Colombo
+2022,Zurich,Lisbon
+2022,Lisbon,Zurich
+2022,Zurich,Brussels
+2022,Brussels,Kinshasa
+2022,Kinshasa,Brussels
+2022,Brussels,Zurich
+2022,Zurich,Berlin
+2022,Berlin,Zurich
+2022,Bologna,Brussels
+2022,Brussels,Bologna
+2022,Vienna,Frankfurt am Main
+2022,Frankfurt am Main,Edinburgh
+2022,Edinburgh,Munich
+2022,Munich,Vienna
+2022,Colombo,Dubai
+2022,Dubai,Zurich
+2022,Zurich,Dubai
+2022,Dubai,Colombo
+2022,Zurich,Doha
+2022,Doha,Colombo
+2022,Colombo,Doha
+2022,Doha,Zurich
+2022,Zurich,Frankfurt am Main
+2022,Frankfurt am Main,Buenos Aires (Ezeiza)
+2022,Buenos Aires (Ezeiza),Frankfurt am Main
+2022,Frankfurt am Main,Zurich
+2022,Zurich,Dublin
+2022,Dublin,Zurich
+2022,Zurich,Dublin
+2022,Dublin,Zurich
+2022,Zurich,Dublin
+2022,Dublin,Zurich
+2022,Zurich,San José (Alajuela)
+2022,Hong Kong,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Zurich
+2022,Zurich,Munich
+2022,Munich,Denver
+2022,Denver,Munich
+2022,Munich,Zurich
+2022,Buenos Aires (Ezeiza),Dallas-Fort Worth
+2022,Dallas-Fort Worth,Denver
+2022,Denver,Miami
+2022,Miami,Buenos Aires (Ezeiza)
+2022,Vasco da Gama,Doha
+2022,Doha,Zurich
+2022,Newcastle,Amsterdam
+2022,Amsterdam,Zurich
+2022,Zurich,Paris
+2022,Paris,Newcastle
+2022,Madrid,Zurich
+2022,Zurich,Madrid
+2022,Barcelona,Zurich
+2022,Zurich,Barcelona
+2022,Buffalo,New York
+2022,New York,Zurich
+2022,Zurich,New York
+2022,New York,Buffalo
+2022,Barcelona,Zurich
+2022,Zurich,Barcelona
+2022,Zurich,Amsterdam
+2022,Amsterdam,Mexico City
+2022,Mexico City,Amsterdam
+2022,Amsterdam,Zurich
+2022,Berlin,Athens
+2022,Athens,Berlin
+2022,Zurich,London
+2022,London,Denver
+2022,Denver,London
+2022,London,Zurich
+2022,Toronto,Zurich
+2022,Zurich,Toronto
+2022,Amsterdam,Zurich
+2022,Zurich,Berlin
+2022,Zurich,Dublin
+2022,Dublin,Zurich
+2022,Bâle/Mulhouse,Athens
+2022,Zurich,Athens
+2022,Thessaloniki,Zurich
+2022,London,Zurich
+2022,Zurich,London
+2022,Milan,Dublin
+2022,Dublin,Milan
+2022,Mexico City,Cancún
+2022,Cancún,Zurich
+2022,Zurich,Cancún
+2022,Cancún,Mexico City
+2022,Zurich,Frankfurt am Main
+2022,Frankfurt am Main,Mexico City
+2022,Mexico City,Frankfurt am Main
+2022,Frankfurt am Main,Zurich
+2022,Ahmedabad,New Delhi
+2022,New Delhi,Zurich
+2022,Zurich,New Delhi
+2022,New Delhi,Ahmedabad
+2022,London,Zurich
+2022,New York,Zurich
+2022,Zurich,Rome
+2022,New York,Paris
+2022,Paris,Zurich
+2022,Zurich,New York
+2022,Düsseldorf,Zurich
+2022,Milan,Amsterdam
+2022,Amsterdam,Milan
+2022,Boston,Lisbon
+2022,Lisbon,Zurich
+2022,Zurich,Lisbon
+2022,Lisbon,Boston
+2022,Newcastle,Paris
+2022,Paris,Zurich
+2022,San Francisco,Zurich
+2022,"Paisley, Renfrewshire",Amsterdam
+2022,Amsterdam,Mexico City
+2022,Brussels,Zurich
+2022,Zurich,Brussels
+2022,Boston,Zurich
+2022,Manila,Dubai
+2022,Dubai,Zurich
+2022,London,Dubai
+2022,Dubai,Manila
+2022,Manila,Dubai
+2022,Dubai,London
+2022,Tallahassee,Charlotte
+2022,Charlotte,London
+2022,London,Zurich
+2022,Venice,Philadelphia
+2022,Philadelphia,Charlotte
+2022,Charlotte,Tallahassee
+2022,Boston,Amsterdam
+2022,Amsterdam,Boston
+2022,Tallahassee,Atlanta
+2022,Atlanta,Amsterdam
+2022,Manchester,Amsterdam
+2022,Amsterdam,Atlanta
+2022,Atlanta,Tallahassee
+2022,Zurich,Dubai
+2022,Dubai,New Delhi
+2022,New Delhi,Frankfurt am Main
+2022,Frankfurt am Main,Zurich
+2022,Zurich,Bergen
+2022,London,Zurich
+2022,Zurich,London
+2022,London,Zurich
+2022,Zurich,London
+2022,London,Zurich
+2022,Zurich,London
+2022,Amsterdam,Zurich
+2022,Zurich,Amsterdam
+2022,San Francisco,Zurich
+2022,Zurich,San Francisco
+2022,Zurich,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Tbilisi
+2022,Tbilisi,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Zurich
+2022,Copenhagen,Narsarsuaq
+2022,Copenhagen,Narsarsuaq
+2022,Zurich,New Delhi
+2022,New Delhi,Zurich
+2022,Ilulissat,Copenhagen
+2022,Ilulissat,Copenhagen
+2022,Qeqertarsuaq Airport,Ilulissat
+2022,Qeqertarsuaq Airport,Ilulissat
+2022,Narsarsuaq,Copenhagen
+2022,Narsarsuaq,Copenhagen
+2022,Copenhagen,Kangerlussuaq
+2022,Kangerlussuaq,Ilulissat
+2022,Ilulissat,Kangerlussuaq
+2022,Kangerlussuaq,Copenhagen
+2022,Narsarsuaq,Nuuk
+2022,Nuuk,Kangerlussuaq
+2022,Seattle,Reykjavík
+2022,Reykjavík,Narsarsuaq
+2022,Narsarsuaq,Reykjavík
+2022,Reykjavík,Seattle
+2022,Denver,Minneapolis
+2022,Zurich,Toronto
+2022,Toronto,Knoxville
+2022,Knoxville,Washington
+2022,Washington,Brussels
+2022,Brussels,Zurich
+2022,Zurich,Edinburgh
+2022,Edinburgh,Zurich
+2022,Zurich,Edinburgh
+2022,Edinburgh,Zurich
+2022,Knoxville,Houston
+2022,Houston,San Francisco
+2022,San Francisco,Zurich
+2022,Zurich,San Francisco
+2022,Zurich,San Francisco
+2022,San Francisco,Zurich
+2022,Zurich,San Francisco
+2022,San Francisco,Zurich
+2022,Zurich,Amsterdam
+2022,Amsterdam,Lima
+2022,Bogota,Amsterdam
+2022,Amsterdam,Zurich
+2022,Zurich,New York
+2022,New York,New Orleans
+2022,Ottawa,Toronto
+2022,Toronto,Zurich
+2022,Zurich,San Francisco
+2022,San Francisco,Zurich
+2022,Bangalore,New Delhi
+2022,New Delhi,Almaty
+2022,Almaty,New Delhi
+2022,New Delhi,Bangalore
+2022,Zurich,Amsterdam
+2022,Amsterdam,"Paisley, Renfrewshire"
+2022,"Paisley, Renfrewshire",Amsterdam
+2022,Amsterdam,Zurich
+2022,Zurich,Edinburgh
+2022,Edinburgh,Zurich
+2022,Zurich,Helsinki
+2022,Helsinki,Zurich
+2022,Zurich,Reykjavík
+2022,Reykjavík,Zurich
+2022,Zurich,São Paulo
+2022,São Paulo,Zurich
+2022,Zurich,São Paulo
+2022,São Paulo,Zurich
+2022,Copenhagen,Reykjavík
+2022,Reykjavík,Zurich
+2022,Copenhagen,Kangerlussuaq
+2022,Kangerlussuaq,Ilulissat
+2022,Ilulissat,Kangerlussuaq
+2022,Kangerlussuaq,Copenhagen
+2022,Copenhagen,Kangerlussuaq
+2022,Kangerlussuaq,Ilulissat
+2022,Ilulissat,Kangerlussuaq
+2022,Kangerlussuaq,Copenhagen
+2022,Copenhagen,Kangerlussuaq
+2022,Kangerlussuaq,Ilulissat
+2022,Ilulissat,Kangerlussuaq
+2022,Kangerlussuaq,Copenhagen
+2022,Copenhagen,Kangerlussuaq
+2022,Kangerlussuaq,Ilulissat
+2022,Ilulissat,Kangerlussuaq
+2022,Kangerlussuaq,Copenhagen
+2022,Copenhagen,Kangerlussuaq
+2022,Kangerlussuaq,Ilulissat
+2022,Ilulissat,Kangerlussuaq
+2022,Kangerlussuaq,Copenhagen
+2022,Zurich,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Almaty
+2022,Almaty,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Zurich
+2022,Zurich,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Almaty
+2022,Almaty,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Zurich
+2022,Zurich,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Almaty
+2022,Almaty,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Zurich
+2022,Zurich,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Almaty
+2022,Almaty,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Zurich
+2022,Zurich,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Almaty
+2022,Almaty,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Zurich
+2022,Zurich,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Almaty
+2022,Almaty,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Zurich
+2022,Zurich,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Bishkek
+2022,Bishkek,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Zurich
+2022,Zurich,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Almaty
+2022,Almaty,"Arnavutköy, Istanbul"
+2022,"Arnavutköy, Istanbul",Zurich
+2022,Washington,Bogota
+2022,Bogota,Washington
+2022,Zurich,Reykjavík
+2022,Reykjavík,Zurich
+2022,Zurich,Doha
+2022,Doha,Nairobi
+2022,Nairobi,Kisumu
+2022,Kisumu,Nairobi
+2022,Nairobi,Doha
+2022,Doha,Zurich
+2022,Frankfurt am Main,Doha
+2022,Doha,Nairobi
+2022,Nairobi,Kisumu
+2022,Kisumu,Nairobi
+2022,Nairobi,Doha
+2022,Doha,Zurich
+2022,Toulouse/Blagnac,Bâle/Mulhouse
+2022,Zurich,Berlin
+2022,Berlin,Zurich
+2022,Zurich,Los Angeles
+2022,Los Angeles,Zurich
+2022,Zurich,Los Angeles
+2022,Los Angeles,Zurich
+2022,Zurich,Montréal
+2022,Minneapolis,Zurich
+2022,Zurich,Montréal
+2022,Montréal,Zurich
+2022,Toulouse/Blagnac,Bâle/Mulhouse
+2022,Bâle/Mulhouse,Toulouse/Blagnac
+2022,Zurich,Manchester
+2022,Manchester,Zurich
+2022,Frankfurt am Main,Montréal
+2022,Montréal,Los Angeles
+2022,Minneapolis,Toronto
+2022,Toronto,Zurich
+2022,Zurich,Doha
+2022,Doha,Nairobi
+2022,Mombasa,Frankfurt am Main
+2022,Frankfurt am Main,Zurich
+2022,Zurich,Doha
+2022,Doha,Nairobi
+2022,Nairobi,Doha
+2022,Doha,Zurich
+2022,Zurich,Berlin
+2022,Berlin,Zurich
+2022,Zurich,Los Angeles
+2022,Los Angeles,Zurich
+2022,Zurich,Berlin
+2022,Berlin,Zurich
+2022,Edinburgh,Kraków
+2022,Nairobi,Kisumu
+2022,Toulouse/Blagnac,Bâle/Mulhouse
+2022,Bâle/Mulhouse,Toulouse/Blagnac
+2022,Berlin,Zurich
+2022,Zurich,Los Angeles
+2022,Los Angeles,Zurich
+2022,Zurich,Berlin
+2022,Berlin,Zurich
+2022,Zurich,Berlin
+2022,Berlin,Zurich
+2022,Zurich,Berlin
+2022,Berlin,Zurich
+2022,Berlin,Zurich
+2022,Toulouse/Blagnac,Bâle/Mulhouse
+2022,Zurich,Manaus
+2022,Manaus,Zurich
+2022,Zurich,Cape Town
+2022,Cape Town,Zurich

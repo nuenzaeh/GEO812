@@ -1,0 +1,132 @@
+---
+title: "GEO 812 -- Tutorial 0: Introduction"
+author: "Peter Ranacher & Takuya Takahashi"
+date: '`r Sys.Date()`'
+format: 
+  html:
+    code-fold: false
+    embed-resources: true
+    number-sections: false
+    fig_caption: yes
+    toc: true
+    toc-location: left
+crossref:
+  fig-title: '**Figure**'
+  fig-labels: arabic
+  title-delim: "**.**"
+  tbl-title: '**Table**'
+  tbl-labels: arabic
+editor: visual
+---
+
+# Course Outline
+
+Welcome to GEO 812, “Getting Started with R for Spatial Analysis.” This course will get you up to speed with spatial analysis in R and prepare you for more advanced courses like GEO 872, “Advanced Spatial Analysis 1.” The course consists of six self-study tutorials, each with an exercise.
+
+You will submit an assignment to get course credits at the end of the course. If you successfully complete the assignment, you will pass the course. There are no grades, and there is no exam. All course materials are on OLAT, including the tutorials, solutions to the exercises, and the assignment. <br>
+
+**Overview of Tutorials**
+
+::: {style="font-size: 70%;"}
+| Tutorial                                | Description                                                                                                                                                                                          |
+|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 00 - Introduction                       | This tutorial explains the course outline and provides a quick introduction to coding in R.                                                                                                          |
+| 01 - Data Exploration                   | In this tutorial, you will explore and visualise data in R using packages from the tidyverse.                                                                                                        |
+| 02 - Tips, Tricks, and Cautionary Tales | This tutorial covers how to make R analyses transparent and reproducible, how to work collaboratively, and where to find help when needed.                                                           |
+| 03 - Data Types and Functions           | This tutorial explores R’s most important data types. You will learn about functions, functionals, and loops, and when to use them. You will also write, test, and debug your own functions.       |
+| 04 - Spatial Data                       | In this tutorial, you will learn how to work with spatial vector and raster data in R. You will perform simple spatial operations and transform data between different coordinate reference systems. |
+| 05 - Maps!                              | Finally, you will learn how to map various geographic data using static and dynamic maps.                                                                                                            |
+:::
+
+<br>
+
+The tutorials are largely based on three books:
+
+-   [R for Data Science (2e)](https://r4ds.hadley.nz/) (2023), Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund. O'Reilly Media.
+-   [Advanced R](https://adv-r.hadley.nz/) (2019), Hadley Wickham. Chapman and Hall/CRC.
+-   [Spatial Data Science - With Applications in R](https://r-spatial.org/book/) (2023), Edzer Pebesma and Roger Bivand. Chapman and Hall/CRC.
+
+The three books are available online under a Creative Commons license.
+
+# Learning Objectives
+
+Every tutorial will begin with the learning objectives. For this tutorial, the objectives are simple:
+
+-   You get to know R and R Studio and learn how to install both.
+-   You perform basic operations in R.
+-   You understand what packages are and how to install and load them.
+
+This is an R course for beginners. If you are already experienced in R, you might find that you know the content of some tutorials. You can simply skip them.
+
+# R and R Studio
+
+R is a programming language and software environment for statistical analysis. R is widely used in science since it is open, independent and free. RStudio is an integrated development environment (IDE) for R. RStudio provides a compartmentalised, simple framework for analysis, making it straightforward to divide your work into multiple contexts, each with its own working directory, workspace, history, and source documents.
+
+You can download R and RStudio [here](https://posit.co/download/rstudio-desktop/) and follow the on-screen installation guidelines. Note: I tested the tutorials with R version 4.4.1 ("Race for Life") and RStudio version 2024.04.2+764 ("Chocolate Cosmos"). If you use a version that's older or newer (hello, humans from the future!), you might not be able to run the code. So make sure you check your version.
+
+The figure below illustrates R's architecture. As the user, you interact with R through a front-end, which in your case is RStudio. RStudio provides access to R, including base R and the core packages that come with the installation. Additionally, over 4,000 third-party packages are available on the Comprehensive R Archive Network (CRAN) for various types of analysis, including statistical analysis, plotting, mathematics, physics, biology, and, of course, geography. These packages are what make R both amazing and sometimes frustrating. They offer a wide range of functions for working with diverse data, but each package may come with its own coding philosophy, which can make learning R as a whole somewhat cumbersome.
+
+![The architecture of R.](images/Rchitecture.jpg)
+
+When you open R Studio, you will see four main windows, each serving a specific purpose in your data analysis workflow. Understanding these windows will help you navigate the software more efficiently and organise your work.
+
+![R Studio - your interface to R.](images/rstudio.png)
+
+-   Script Window: This is where you write your code, typically in an R script file. Think of the script as a text document where you document all the steps of your analysis. The script serves as a record of your work, allowing you to save, share, and re-run your code. R scripts usually have the extension `.R`, but you can also create other documents, such as R Markdown files (`.Rmd`) or Quarto files (`.qmd`). R Markdown and Quarto are particularly useful for creating documents that combine code, output, and narrative text (more on that in tutorial 2).
+
+-   Console Window: The console is where the code you write in the script is executed by the R engine. While you can write code directly in the console, it is generally not recommended to do so because the console does not keep a permanent record of your work. If you write code in the console and don't save it elsewhere, you might lose track of what you did. Instead, use the script window to write and save your code, and then run it in the console.
+
+-   Environment Window: On the right-hand side, the Environment displays all the objects you have created in your current R session, including data frames, vectors, functions, and other variables (see tutorials 1 and 3). The window also includes a History tab, recording all the commands you've executed during your session.
+
+-   Files/Plots/Packages/Help Window: The lower right window in RStudio is multifunctional. Files displays the files in your current working directory, allowing you to navigate, open, and manage your files directly within RStudio. Plots displays any plots or graphs you generate during your analysis. Packages shows a list of all the R packages you have installed. Help provides access to R's help system (see tutorial 2).
+
+## R coding basics
+
+In R, a project is a self-contained workspace that includes all the files and settings related to a specific analysis or task. Always work with projects in R! Projects help you keep everything organised in one place, including your data, scripts, plots, and results, which makes it easier to manage and avoid confusion. So, before we start, create a new project by clicking File → New Project and following the instructions in the pop-up window.
+
+There are two fundamental coding skills in R, and in any programming language for that matter: assigning values to objects and modifying objects with functions. Let's first assign a value to an object. I recommend copying and pasting the code into an R script and running it yourself.
+
+```{r coding basics assignment}
+y <- 20
+
+```
+
+In the code above, `y` is the object. The `<-` symbol is the assignment operator, so you can read the code as `y` is assigned the value `20`. You might wonder how you can name things in R. In short, names can include letters, numbers, underscores (`_`), and periods (`.`). They must start with a letter and are case-sensitive. So, `some_name`, `Some_Name`, and `SOME_NAME` are three different objects.
+
+Next, we'll look at functions.
+
+```{r coding basics functions}
+x <- seq(from = 1, to = 10)
+
+```
+
+The function `seq(from = 1, to = 10)` generates a sequence of numbers from `1` to `10`. Here, `seq()` is the function name. `from` is the starting and `to` is the ending value of the sequence. These are called arguments of the function. The output of the function, the sequence from 1 to 10, is assigned to the object `x`. You can specify the arguments either by name, as in the code above, or by position, as shown in the code below.
+
+```{r coding basics functions by name}
+
+x <- seq(1, 10) 
+```
+
+Providing arguments by name is more explicit while providing them by position is shorter and often preferred. And that’s it — coding in R, in a nutshell.
+
+## Packages
+
+You’ve already seen that many of the most interesting packages in R are not included with the base R installation. Instead, you need to install them manually. Here’s how that works:
+
+```{r, message=FALSE}
+
+if (!"tidyverse" %in% rownames(installed.packages())) install.packages("tidyverse")
+
+library(tidyverse)
+
+```
+
+The code checks if the package named `tidyverse` has already been installed. If not, it installs it. The `tidyverse` is a collection of packages frequently used for data analysis in R (see tutorial 1). You can also run `install.packages("tidyverse")` directly without performing this check, but this will reinstall the package every time. After installation, you need to load the package using `library(tidyverse)`. Packages are installed once and remain associated with your R installation, but you must load the package in each new session (i.e., every time you start R).
+
+In future tutorials, I will load the packages but not install them. So if you encounter an error like `library(tidyverse) : there is no package called ‘tidyverse’`, you'll know what to do: install the package.
+
+### Wildcard imports
+
+The `library()` command imports all functions and variables from a package into the current workspace. This is convenient but can lead to name collisions when multiple packages contain functions with the same name. For example, both the `terra` and `magrittr` package from the `tidyverse` have a function named `extract`. When you load both packages using `library()`, the function from the second package you load will overwrite the function from the first one, causing confusion and potential errors in your code. To avoid this issue, you can specify the namespace of a function by using the double colon operator. For instance, you can use `terra::extract` to call the function from the `terra` package and `magrittr::extract` to call the function from the `magrittr` package ensuring that you are using the correct function from the intended package.
+
+See you in the next tutorial!

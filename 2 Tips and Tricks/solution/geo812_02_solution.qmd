@@ -1,0 +1,55 @@
+---
+title: "GEO 812 -- Solution 2: Tips, tricks and cautionary tales"
+author: "Peter Ranacher & Takuya Takahashi"
+date: '`r Sys.Date()`'
+format: 
+  html:
+    code-fold: false
+    embed-resources: true
+    number-sections: false
+    fig_caption: yes
+    toc: true
+    toc-location: left
+---
+
+
+```{r packages, message=FALSE}
+library(tidyverse)
+library(tidygeocoder)
+```
+
+# Read the AMM data 
+
+First, we read the csv data with the `read_csv` function from the `tidyverse`. 
+
+```{r read data, message=FALSE, results='hide'}
+flight_data <- read_csv("data/flight_data_amm.csv")
+```
+
+# Geocode the data 
+
+Next, we geocode the data using the `geo` function from the `tidygeocoder` package. This process might take a minute or two.
+
+```{r geocode, message=FALSE, cache=T}
+
+flight_data_geocoded <- flight_data |> 
+  mutate(origin_geocode = geo(origin),  
+         origin_lat = origin_geocode$lat,
+         origin_long = origin_geocode$long) |>
+  mutate(destination_geocode = geo(destination),
+         destination_lat = destination_geocode$lat,
+         destination_long = destination_geocode$long) |>
+  select(-c(origin_geocode, destination_geocode)) 
+
+    
+
+```
+
+Finally, we export the data for later use (see tutorial 3).
+
+```{r write csv}
+
+write_csv(flight_data_geocoded, "data/flight_data_amm_coords.csv")
+
+```
+
